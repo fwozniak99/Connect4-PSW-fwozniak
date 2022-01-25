@@ -67,6 +67,29 @@ class Game {
     }
 }
 
+app.get('/games', (req, res) => {
+    try {
+        res.send({ games: allGames });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+app.post('/games', (req, res) => {
+    try {
+        const id = uuidv4();
+
+        allGames.push(new Game(id));
+        client.publish('/games', id);
+
+        res.send({ newGame: id });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
