@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import mqtt from 'mqtt';
-import {Buffer} from 'buffer';
-Buffer.from('mqtt','base64');
-
+import { Link } from 'react-router-dom';
 const port = 8080;
 
 function Home() {
@@ -43,7 +41,9 @@ function Home() {
             CONNECT 4 ROOMS
             {games && games.map(game => {
                 return (
-                <div key={game.id}>{game.id}</div>
+                <div key={game.id}>
+                    <Link to={`/games/${game.id}`}>{game.id}</Link>
+                </div>
                 )}
             )}
         </div>

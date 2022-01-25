@@ -16,13 +16,13 @@ class Game {
     constructor(id) {
         this.id = id;
         this.players = [];
-        this.board = [[],[],[],[],[],[]],
+        this.board = [ [[],[],[],[],[],[]],
         [[],[],[],[],[],[]],
         [[],[],[],[],[],[]],
         [[],[],[],[],[],[]],
         [[],[],[],[],[],[]],
         [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]];
+        [[],[],[],[],[],[]] ];
     }
 
     addPlayer(name) {
@@ -84,6 +84,17 @@ app.post('/games', (req, res) => {
         client.publish('/games', id);
 
         res.send({ newGame: id });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+app.get('/games/:id/board', (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = allGames.find(game => id === game.id);
+        res.send({ board: game.board });
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });
