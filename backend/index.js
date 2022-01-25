@@ -22,9 +22,49 @@ class Game {
         [[],[],[],[],[],[]],
         [[],[],[],[],[],[]],
         [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]]
+        [[],[],[],[],[],[]];
     }
 
+    addPlayer(name) {
+        this.players.push(name);
+    }
+
+    isOver(player) {
+        // horizontal
+        for ( col = 0; col < 4; col++ ) {
+            for ( row = 0; row < 6; row++ ) {
+                if (board[col][row] === player && board[col+1][row] === player && board[col+2][row] === player && board[col+3][row] === player) {
+                    return true
+                }
+            }
+        }
+        // vertical
+        for ( col = 0; col < 7; col++ ) {
+            for ( row = 0; rov < 3; row++ ) {
+                if (board[col][row] === player && board[col][row+1] === player && board[col][row+2] === player && board[col][row+3] === player) {
+                    return true
+                }
+            }
+        }
+        // diagonal /
+        for ( col = 0; col < 4; col++ ) {
+            for ( row = 0; rov < 3; row++ ) {
+                if (board[col][row] === player && board[col+1][row+1] === player && board[col+2][row+2] === player && board[col+3][row+3] === player) {
+                    return true
+                }
+            }
+        }
+        // diagonal \
+        for ( col = 0; col < 4; col++ ) {
+            for ( row = 3; row < 7; row++ ) {
+                if (board[col][row] === player && board[col+1][row-1] === player && board[col+2][row-2] === player && board[col+3][row-3] === player) {
+                    return true
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 app.listen(port, () => {
