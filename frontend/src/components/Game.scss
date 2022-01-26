@@ -1,0 +1,23 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .gameContainer {
+        display: grid;
+        grid-template-columns: repeat(7, 100px);
+        background-color: rgb(48, 48, 179);
+        border-radius: 5%;
+        padding: 10px;
+        gap: 5px;
+        .tokenContainer {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: rgb(87, 87, 252);
+            &:hover {
+                opacity: 0.8;
+                cursor: pointer;
+            }
+        }
+    }
+}

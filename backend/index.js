@@ -16,13 +16,13 @@ class Game {
     constructor(id) {
         this.id = id;
         this.players = [];
-        this.board = [ [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]],
-        [[],[],[],[],[],[]] ];
+        this.board = [ [1, 0, 0, 0, 0, 0],
+        [0, 2, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1],
+        [0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 2, 0],
+        [0, 0, 0, 0, 0, 0] ];
     }
 
     addPlayer(name) {
@@ -94,7 +94,7 @@ app.get('/games/:id/board', (req, res) => {
     try {
         const id = req.params.id;
         const game = allGames.find(game => id === game.id);
-        res.send({ board: game.board });
+        res.send({ board: game ? game.board : []});
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });
