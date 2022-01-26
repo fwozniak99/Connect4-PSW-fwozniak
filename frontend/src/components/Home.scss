@@ -1,0 +1,32 @@
+#gamesTypography {
+    font-weight: 500;
+    margin-top: 50px;
+}
+
+.listContainer {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    .roomContainer {
+        color: white;
+        width: 400px;
+        min-height: 50px;
+        padding: 15px;
+        border-radius: 1%;
+        background-color: #0466c8;
+        margin-bottom: 5px;
+        &:nth-child(2n) {
+            background-color: #4a94df;
+        }
+        a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
