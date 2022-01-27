@@ -69,7 +69,7 @@ class Game {
     }
 
     checkIfMoveValid(col) {
-        return this.board[col][5] === 0;
+        return this.board[col][0] === 0;
     }
 
     makeMove(col, player, row) {
@@ -78,7 +78,7 @@ class Game {
     }
 
     getAvailableRow(col) {
-        for ( let i = 0; i < 6; i++ ) {
+        for ( let i = 5; i >= 0; i-- ) {
             if (this.board[col][i] === 0) {
                 return i;
             }
