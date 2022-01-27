@@ -1,5 +1,10 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import Input from '@mui/material/Input';
+import InputAdornment from '@mui/material/InputAdornment';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import SendIcon from '@mui/icons-material/Send';
+import Button from '@mui/material/Button';
 import axios from 'axios';
 import mqtt from 'mqtt';
 import './Game.scss';
@@ -19,14 +24,15 @@ function Game() {
         if(client) {
             client.on('connect', () => {
                 console.log("connected")
-                client.subscribe('/games');
+                client.subscribe(`/move/${id}`);
             })
 
             getBoard();
 
             client.on('message', (topic, message) => {
-                if (topic.toString() === '/games') {
-                    getBoard();
+                if (topic.toString() === `/move/${id}`) {
+                    const newBoard = JSON.parse(message.toString());
+                    setBoard(newBoard);
                 }
             });
         }
@@ -40,18 +46,41 @@ function Game() {
         }).catch(err => console.log(err));
     }
 
+    const makeMove = (player, col) => {
+        axios.post(`http://localhost:${port}/games/${id}`, { player, col })
+            .catch(error => console.log(error));
+    };
+
+
     return (
         <div className="pageContainer">
             <h2>Game {id}</h2>
-            <div className="gameContainer">
-                {board && board.map((col) => {
-                    return col.map((row, id) => {
-                        return (
-                            <div key={id} className="tokenContainer" style={row===1 ? {backgroundColor: "#FFBF00"} : row===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
-                            </div>
-                        )
-                    })
-                })}
+            <div className="gameAndChatContainer">
+                <div className="gameContainer">
+                    {board && board.map((col, n) => {
+                        return col.map((el, id) => {
+                            return (
+                                <div key={id} onClick={() => {makeMove(1, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
+                                {n}
+                                </div>
+                            )
+                        })
+                    })}
+                </div>
+                <div className="chatbox">
+                                <h3>Chat</h3>
+
+                                <Input
+                                id="input-with-icon-adornment"
+                                startAdornment={
+                                    <InputAdornment position="start">
+                                        <AccountCircle />
+                                    </InputAdornment>
+                                }/>
+                                <Button>
+                                    <SendIcon/>
+                                </Button>
+                </div>
             </div>
         </div>
     )

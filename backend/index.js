@@ -23,6 +23,8 @@ class Game {
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 2, 0],
         [0, 0, 0, 0, 0, 0] ];
+        this.active = true;
+        this.viewers = [];
     }
 
     addPlayer(name) {
@@ -31,39 +33,56 @@ class Game {
 
     isOver(player) {
         // horizontal
-        for ( col = 0; col < 4; col++ ) {
-            for ( row = 0; row < 6; row++ ) {
-                if (board[col][row] === player && board[col+1][row] === player && board[col+2][row] === player && board[col+3][row] === player) {
+        for ( let col = 0; col < 4; col++ ) {
+            for ( let row = 0; row < 6; row++ ) {
+                if (this.board[col][row] === player && this.board[col+1][row] === player && this.board[col+2][row] === player && this.board[col+3][row] === player) {
                     return true
                 }
             }
         }
         // vertical
-        for ( col = 0; col < 7; col++ ) {
-            for ( row = 0; rov < 3; row++ ) {
-                if (board[col][row] === player && board[col][row+1] === player && board[col][row+2] === player && board[col][row+3] === player) {
+        for ( let col = 0; col < 7; col++ ) {
+            for ( let row = 0; row < 3; row++ ) {
+                if (this.board[col][row] === player && this.board[col][row+1] === player && this.board[col][row+2] === player && this.board[col][row+3] === player) {
                     return true
                 }
             }
         }
         // diagonal /
-        for ( col = 0; col < 4; col++ ) {
-            for ( row = 0; rov < 3; row++ ) {
-                if (board[col][row] === player && board[col+1][row+1] === player && board[col+2][row+2] === player && board[col+3][row+3] === player) {
+        for ( let col = 0; col < 4; col++ ) {
+            for ( let row = 0; row < 3; row++ ) {
+                if (this.board[col][row] === player && this.board[col+1][row+1] === player && this.board[col+2][row+2] === player && this.board[col+3][row+3] === player) {
                     return true
                 }
             }
         }
         // diagonal \
-        for ( col = 0; col < 4; col++ ) {
-            for ( row = 3; row < 7; row++ ) {
-                if (board[col][row] === player && board[col+1][row-1] === player && board[col+2][row-2] === player && board[col+3][row-3] === player) {
+        for ( let col = 0; col < 4; col++ ) {
+            for ( let row = 3; row < 7; row++ ) {
+                if (this.board[col][row] === player && this.board[col+1][row-1] === player && this.board[col+2][row-2] === player && this.board[col+3][row-3] === player) {
                     return true
                 }
             }
         }
 
         return false;
+    }
+
+    checkIfMoveValid(col) {
+        return this.board[col][5] === 0;
+    }
+
+    makeMove(col, player, row) {
+        this.board[col][row] = player;
+        client.publish(`/move/${this.id}`, JSON.stringify({ board: this.board }));
+    }
+
+    getAvailableRow(col) {
+        for ( let i = 0; i < 6; i++ ) {
+            if (this.board[col][i] === 0) {
+                return i;
+            }
+        }
     }
 }
 
@@ -100,6 +119,24 @@ app.get('/games/:id/board', (req, res) => {
         res.send({ err: err.message });
     }
 })
+
+app.post('/games/:id', (req, res) => {
+    try {
+        const id = req.params.id;
+        const { player, col } = req.body;
+        const game = allGames.find(game => id === game.id);
+
+        if (game.checkIfMoveValid(col)) {
+            game.makeMove(col, player, game.getAvailableRow(col));
+            game.isOver(player);
+        }
+
+        res.send({ wasMoveMade: true });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+});
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
