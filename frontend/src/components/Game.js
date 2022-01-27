@@ -32,12 +32,12 @@ function Game() {
             client.on('message', (topic, message) => {
                 if (topic.toString() === `/move/${id}`) {
                     const newBoard = JSON.parse(message.toString());
-                    setBoard(newBoard);
+                    setBoard(newBoard.board);
                 }
             });
         }
 
-    }, [client])
+    }, [client, id])
 
     const getBoard = () => {
         axios.get(`http://localhost:${port}/games/${id}/board`).then((res) => {
