@@ -31,6 +31,10 @@ class Game {
         this.players.push(name);
     }
 
+    addViewer(name) {
+        this.viewers.push(name);
+    }
+
     isOver(player) {
         // horizontal
         for ( let col = 0; col < 4; col++ ) {
@@ -108,6 +112,26 @@ app.post('/games', (req, res) => {
         res.send({ err: err.message });
     }
 })
+
+app.post('/games/:id/add', (req, res) => {
+    try {
+        const id = req.params.id;
+        const color = req.body.color;
+        const name = req.body.name;
+        const game = allGames.find(game => id === game.id);
+
+        if (game.players.includes(name)) {
+            game.addWatcher(name);
+            res.send({ wasPlayerAdded: false, wasViewerAdded: true });
+        } else {
+            game.addPlayer([name, color]);
+            res.send({ wasPlayerAdded: true, wasViewerAdded: false });
+        }
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+});
 
 app.get('/games/:id/board', (req, res) => {
     try {
