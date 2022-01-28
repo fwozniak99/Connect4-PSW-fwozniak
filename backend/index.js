@@ -25,6 +25,7 @@ class Game {
         [0, 0, 0, 0, 0, 0] ];
         this.active = true;
         this.viewers = [];
+        this.message = "";
     }
 
     addPlayer(name) {
@@ -152,7 +153,10 @@ app.post('/games/:id', (req, res) => {
 
         if (game.checkIfMoveValid(col)) {
             game.makeMove(col, player, game.getAvailableRow(col));
-            game.isOver(player);
+            if(game.isOver(player)) {
+                game.active = false;
+                game.message = `${player} wins!`
+            };
         }
 
         res.send({ wasMoveMade: true });
