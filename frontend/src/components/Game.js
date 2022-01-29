@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import Input from '@mui/material/Input';
+import { TextField } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SendIcon from '@mui/icons-material/Send';
@@ -83,10 +83,10 @@ function Game() {
             <div className="gameAndChatContainer">
                 { !visible ?
                 <div>    
-                    <input
+                    <TextField
                             onChange={(e) => setName(e.target.value)}
                             value={name}
-                            placeholder={"Type your name..."}
+                            label="Type your name..." variant="outlined"
                         />
                     <Button onClick={() => sendPlayer()}>Confirm</Button>
                 </div>
@@ -97,25 +97,27 @@ function Game() {
                                 return col.map((el, id) => {
                                     return (
                                         <div key={id} onClick={() => {makeMove(1, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
-                                        {n}
                                         </div>
                                     )
                                 })
                             })}
                         </div>
                         <div className="chatbox">
-                                        <h3>Chat</h3>
-
-                                        <Input
-                                        id="input-with-icon-adornment"
-                                        startAdornment={
-                                            <InputAdornment position="start">
-                                                <AccountCircle />
-                                            </InputAdornment>
-                                        }/>
-                                        <Button>
-                                            <SendIcon/>
-                                        </Button>
+                            <h3>Chat</h3>
+                            <div>
+                                <TextField
+                                    label="Send message"
+                                    id="filled-start-adornment"
+                                    sx={{ m: 2, width: '25ch' }}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
+                                    }}
+                                    variant="filled"
+                                    />
+                                <Button>
+                                    <SendIcon/>
+                                </Button>
+                            </div>
                         </div>
                 </div>
                 }
