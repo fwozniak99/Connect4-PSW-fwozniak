@@ -15,6 +15,10 @@ function Game() {
     let { id } = useParams();
     const [ board, setBoard ] = useState([]);
     const [ client, setClient ] = useState(null);
+    const [ player1, setPlayer1 ] = useState(null);
+    const [ player2, setPlayer2 ] = useState(null);
+    const [ status, setStatus ] = useState();
+    const [ turn, setTurn ] = useState();
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -33,6 +37,14 @@ function Game() {
                 if (topic.toString() === `/move/${id}`) {
                     const newBoard = JSON.parse(message.toString());
                     setBoard(newBoard.board);
+                    setTurn(newBoard.turn);
+                } else if (topic.toString() === `/addPlayers/${id}`) {
+                    const player = JSON.parse(message.toString());
+                    if (player.player1) {
+                        setPlayer2(player.player2);
+                    } else {
+                        setPlayer1(player.player1);
+                    }
                 }
             });
         }

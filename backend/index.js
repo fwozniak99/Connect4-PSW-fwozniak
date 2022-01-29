@@ -15,7 +15,7 @@ let allGames = [];
 class Game {
     constructor(id) {
         this.id = id;
-        this.players = [];
+        this.participants = [];
         this.board = [ [1, 0, 0, 0, 0, 0],
         [0, 2, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 1],
@@ -23,17 +23,16 @@ class Game {
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 2, 0],
         [0, 0, 0, 0, 0, 0] ];
-        this.active = true;
-        this.viewers = [];
+        this.active = false;
         this.message = "";
+        this.player1 = null;
+        this.player2 = null;
+        this.over = false;
+        this.turn = 0;
     }
 
-    addPlayer(name) {
-        this.players.push(name);
-    }
-
-    addViewer(name) {
-        this.viewers.push(name);
+    addParticipant(name) {
+        this.participants.push(name);
     }
 
     isOver(player) {
@@ -79,7 +78,7 @@ class Game {
 
     makeMove(col, player, row) {
         this.board[col][row] = player;
-        client.publish(`/move/${this.id}`, JSON.stringify({ board: this.board }));
+        client.publish(`/move/${this.id}`, JSON.stringify({ board: this.board, turn: this.turn }));
     }
 
     getAvailableRow(col) {
@@ -121,13 +120,38 @@ app.post('/games/:id/add', (req, res) => {
         const name = req.body.name;
         const game = allGames.find(game => id === game.id);
 
-        if (game.players.includes(name)) {
-            game.addWatcher(name);
-            res.send({ wasPlayerAdded: false, wasViewerAdded: true });
+        if (!game.participants.includes(name)) {
+            game.addParticipant(name);
+            res.send({ wasParticipantAdded: true });
         } else {
-            game.addPlayer([name, color]);
-            res.send({ wasPlayerAdded: true, wasViewerAdded: false });
+            res.send({ wasParticipantAdded: false });
         }
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+});
+
+app.post('/games/:id/play', (req, res) => {
+    try {
+        const id = req.params.id;
+        const { player1, player2, color } = req.body;
+        const game = allGames.find(game => id === game.id);
+
+        if (player1) {
+            game.player1 = [player1, color];
+        } else {
+            game.player2 = [player2, color];
+        }
+
+        client.publish(`/addPlayers/${id}`, JSON.stringify({ player1: game.player1, player2: game.player2 }))
+
+        if( game.player1 && game.player2 ) {
+            client.publish(`/move/${id}`, JSON.stringify({ board: this.board, turn: this.turn }));
+        }
+
+        res.send({ wasPlayerAdded: true });
+
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });
@@ -154,7 +178,7 @@ app.post('/games/:id', (req, res) => {
         if (game.checkIfMoveValid(col)) {
             game.makeMove(col, player, game.getAvailableRow(col));
             if(game.isOver(player)) {
-                game.active = false;
+                game.over = true;
                 game.message = `${player} wins!`
             };
         }
