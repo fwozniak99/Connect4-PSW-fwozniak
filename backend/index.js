@@ -116,7 +116,6 @@ app.post('/games', (req, res) => {
 app.post('/games/:id/add', (req, res) => {
     try {
         const id = req.params.id;
-        const color = req.body.color;
         const name = req.body.name;
         const game = allGames.find(game => id === game.id);
 
@@ -147,7 +146,7 @@ app.post('/games/:id/play', (req, res) => {
         client.publish(`/addPlayers/${id}`, JSON.stringify({ player1: game.player1, player2: game.player2 }))
 
         if( game.player1 && game.player2 ) {
-            client.publish(`/move/${id}`, JSON.stringify({ board: this.board, turn: this.turn }));
+            client.publish(`/status/${id}`, JSON.stringify({ turn: this.turn }));
         }
 
         res.send({ wasPlayerAdded: true });

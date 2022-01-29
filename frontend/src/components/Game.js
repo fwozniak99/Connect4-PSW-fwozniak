@@ -19,6 +19,9 @@ function Game() {
     const [ player2, setPlayer2 ] = useState(null);
     const [ status, setStatus ] = useState();
     const [ turn, setTurn ] = useState();
+    const [ name, setName ] = useState('');
+    const [ visible, setVisible ] = useState(false);
+    const [ nameTaken, setNameTaken ] = useState(false);
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -45,7 +48,10 @@ function Game() {
                     } else {
                         setPlayer1(player.player1);
                     }
-                }
+                } else if (topic.toString() === `/status/${id}`) {
+                    const status = JSON.parse(message.toString());
+                    setTurn(status.turn);
+            };
             });
         }
 
@@ -60,7 +66,14 @@ function Game() {
 
     const makeMove = (player, col) => {
         axios.post(`http://localhost:${port}/games/${id}`, { player, col })
-            .catch(error => console.log(error));
+            .catch(err => console.log(err));
+    };
+
+    const sendPlayer = () => {
+        axios.post(`http://localhost:${port}/games/${id}/add`, { name }).then((res) => {
+            setNameTaken(!res.data.wasParticipantAdded);
+            setVisible(res.data.wasParticipantAdded);
+        }).catch(err => console.log(err));
     };
 
 
@@ -68,31 +81,44 @@ function Game() {
         <div className="pageContainer">
             <h2>Game {id}</h2>
             <div className="gameAndChatContainer">
-                <div className="gameContainer">
-                    {board && board.map((col, n) => {
-                        return col.map((el, id) => {
-                            return (
-                                <div key={id} onClick={() => {makeMove(1, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
-                                {n}
-                                </div>
-                            )
-                        })
-                    })}
+                { !visible ?
+                <div>    
+                    <input
+                            onChange={(e) => setName(e.target.value)}
+                            value={name}
+                            placeholder={"Type your name..."}
+                        />
+                    <Button onClick={() => sendPlayer()}>Confirm</Button>
                 </div>
-                <div className="chatbox">
-                                <h3>Chat</h3>
+                :
+                <div>
+                    <div className="gameContainer">
+                            {board && board.map((col, n) => {
+                                return col.map((el, id) => {
+                                    return (
+                                        <div key={id} onClick={() => {makeMove(1, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
+                                        {n}
+                                        </div>
+                                    )
+                                })
+                            })}
+                        </div>
+                        <div className="chatbox">
+                                        <h3>Chat</h3>
 
-                                <Input
-                                id="input-with-icon-adornment"
-                                startAdornment={
-                                    <InputAdornment position="start">
-                                        <AccountCircle />
-                                    </InputAdornment>
-                                }/>
-                                <Button>
-                                    <SendIcon/>
-                                </Button>
+                                        <Input
+                                        id="input-with-icon-adornment"
+                                        startAdornment={
+                                            <InputAdornment position="start">
+                                                <AccountCircle />
+                                            </InputAdornment>
+                                        }/>
+                                        <Button>
+                                            <SendIcon/>
+                                        </Button>
+                        </div>
                 </div>
+                }
             </div>
         </div>
     )
