@@ -83,15 +83,30 @@ function Game() {
             <div className="gameAndChatContainer">
                 { !visible ?
                 <div>    
-                    <TextField
-                            onChange={(e) => setName(e.target.value)}
-                            value={name}
-                            label="Type your name..." variant="outlined"
-                        />
-                    <Button onClick={() => sendPlayer()}>Confirm</Button>
+                    {!nameTaken ? 
+                        <div>
+                            <TextField
+                                    onChange={(e) => setName(e.target.value)}
+                                    value={name}
+                                    label="Type your name..." variant="outlined"
+                                />
+                            <Button onClick={() => sendPlayer()}>Confirm</Button>
+                        </div>
+                        :
+                        <div>
+                            <TextField
+                                    onChange={(e) => setName(e.target.value)}
+                                    value={name}
+                                    error
+                                    label="Name is taken..." variant="outlined"
+                                />
+                            <Button onClick={() => sendPlayer()}>Confirm</Button>
+                        </div>
+                    }
                 </div>
                 :
                 <div>
+                    
                     <div className="gameContainer">
                             {board && board.map((col, n) => {
                                 return col.map((el, id) => {
