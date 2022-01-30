@@ -33,6 +33,7 @@ function Game() {
             client.on('connect', () => {
                 console.log("connected")
                 client.subscribe(`/move/${id}`);
+                client.subscribe(`/addplayers/${id}`);
             })
 
             getBoard();
@@ -42,18 +43,26 @@ function Game() {
                     const newBoard = JSON.parse(message.toString());
                     setBoard(newBoard.board);
                     setTurn(newBoard.turn);
-                } else if (topic.toString() === `/addPlayers/${id}`) {
+                }
+                if (topic.toString() === `/addplayers/${id}`) {
                     const player = JSON.parse(message.toString());
-                    if (player.player1) {
-                        setPlayer2(player.player2);
+                    if (!player.player1) {
+                        setPlayer2([player.player2, player.player2color]);
                     } else {
-                        setPlayer1(player.player1);
+                        setPlayer1([player.player1, player.player1color]);
                     }
-                } else if (topic.toString() === `/status/${id}`) {
+                }
+                if (topic.toString() === `/status/${id}`) {
                     const status = JSON.parse(message.toString());
                     setTurn(status.turn);
             };
             });
+            axios.get(`http://localhost:${port}/games/${id}`)
+            .then(res => {
+                setPlayer1(res.data.player1);
+                setPlayer2(res.data.player2);
+            })
+            .catch(err => console.log(err));
         }
 
     }, [client, id])
@@ -61,7 +70,6 @@ function Game() {
     const getBoard = () => {
         axios.get(`http://localhost:${port}/games/${id}/board`).then((res) => {
             setBoard(res.data.board);
-            console.log(res.data.board);
         }).catch(err => console.log(err));
     }
 
@@ -77,15 +85,18 @@ function Game() {
         }).catch(err => console.log(err));
     };
 
-    const sendPlayer = (name, color) => {
-        axios.post(`http://localhost:${port}/games/${id}/play`, { name }).then(() => {
-            if ( color === 1 ) {
-                setPlayer1([name, color]);
-            } else {
-                setPlayer2([name, color]);
-            }
+    const sendPlayer1 = (name) => {
+        axios.post(`http://localhost:${port}/games/${id}/play`, { player1: name, color: 1 }).then(() => {
+                setPlayer1([name, 1]);
             }).catch(err => console.log(err));
     };
+
+    const sendPlayer2 = (name) => {
+        axios.post(`http://localhost:${port}/games/${id}/play`, { player2: name, color: 2 }).then(() => {
+                setPlayer2([name, 2]);
+            }).catch(err => console.log(err));
+    };
+
 
 
     return (
@@ -120,12 +131,12 @@ function Game() {
                     <div className="playerButtons">
                         {player1 ? 
                             <div id="yellowTypography">
-                                {name} is yellow!
+                                {player1[0]} is yellow!
                             </div> 
                         :
                             <div>
                                 <Button
-                                    onClick={() => {sendPlayer(name, 1)}}
+                                    onClick={() => {sendPlayer1(name)}}
                                     id="yellowButton"
                                 >
                                     Play as Yellow
@@ -134,12 +145,12 @@ function Game() {
 
                         {player2 ? 
                             <div id="redTypography">
-                                {name} is red!
+                                {player2[0]} is red!
                             </div>
                         :
                         <div>
                             <Button
-                                onClick={() => {sendPlayer(name, 2)}}
+                                onClick={() => {sendPlayer2(name)}}
                                 id="redButton"
                             >
                                 Play as Red

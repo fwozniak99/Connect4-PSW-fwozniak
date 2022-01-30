@@ -143,7 +143,7 @@ app.post('/games/:id/play', (req, res) => {
             game.player2 = [player2, color];
         }
 
-        client.publish(`/addPlayers/${id}`, JSON.stringify({ player1: game.player1, player2: game.player2 }))
+        client.publish(`/addplayers/${id}`, JSON.stringify({ player1, player1color: 1, player2, player2color: 2 }));
 
         if( game.player1 && game.player2 ) {
             client.publish(`/status/${id}`, JSON.stringify({ turn: this.turn }));
@@ -183,6 +183,18 @@ app.post('/games/:id', (req, res) => {
         }
 
         res.send({ wasMoveMade: true });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+});
+
+app.get('/games/:id', (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = allGames.find(game => id === game.id);
+
+        res.send({ player1: game.player1, player2: game.player2});
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });
