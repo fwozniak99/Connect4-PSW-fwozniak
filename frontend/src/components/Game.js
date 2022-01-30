@@ -80,7 +80,7 @@ function Game() {
     return (
         <div className="pageContainer">
             <h2>Game {id}</h2>
-            <div className="gameAndChatContainer">
+            <div className="mainContainer">
                 { !visible ?
                 <div>    
                     {!nameTaken ? 
@@ -105,35 +105,67 @@ function Game() {
                     }
                 </div>
                 :
-                <div>
-                    
-                    <div className="gameContainer">
-                            {board && board.map((col, n) => {
-                                return col.map((el, id) => {
-                                    return (
-                                        <div key={id} onClick={() => {makeMove(1, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
-                                        </div>
-                                    )
-                                })
-                            })}
-                        </div>
-                        <div className="chatbox">
-                            <h3>Chat</h3>
+                <div className="gameAndChatContainer">
+                    <div className="playerButtons">
+                        {player1 ? 
+                            <div id="yellowTypography">
+                                {name} is yellow!
+                            </div> 
+                        :
                             <div>
-                                <TextField
-                                    label="Send message"
-                                    id="filled-start-adornment"
-                                    sx={{ m: 2, width: '25ch' }}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
-                                    }}
-                                    variant="filled"
-                                    />
-                                <Button>
-                                    <SendIcon/>
+                                <Button
+                                    onClick={() => {}}
+                                    id="yellowButton"
+                                >
+                                    Play as Yellow
                                 </Button>
+                            </div>}
+
+                        {player2 ? 
+                            <div id="redTypography">
+                                {name} is red!
                             </div>
-                        </div>
+                        :
+                        <div>
+                            <Button
+                                onClick={() => {}}
+                                id="redButton"
+                            >
+                                Play as Red
+                            </Button>
+                        </div>}
+                    </div>
+
+
+                    <div>
+                        <div className="gameContainer">
+                                {board && board.map((col, n) => {
+                                    return col.map((el, id) => {
+                                        return (
+                                            <div key={id} onClick={() => {makeMove(1, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
+                                            </div>
+                                        )
+                                    })
+                                })}
+                            </div>
+                            <div className="chatbox">
+                                <h3>Chat</h3>
+                                <div>
+                                    <TextField
+                                        label="Send message"
+                                        id="filled-start-adornment"
+                                        sx={{ m: 2, width: '25ch' }}
+                                        InputProps={{
+                                            startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
+                                        }}
+                                        variant="filled"
+                                        />
+                                    <Button>
+                                        <SendIcon/>
+                                    </Button>
+                                </div>
+                            </div>
+                    </div>
                 </div>
                 }
             </div>
