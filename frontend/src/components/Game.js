@@ -22,7 +22,8 @@ function Game() {
     const [ name, setName ] = useState('');
     const [ visible, setVisible ] = useState(false);
     const [ nameTaken, setNameTaken ] = useState(false);
-    const player = player1 ? player1.includes(name) ? player1[1] : 0 : player2 ? player2.includes(name) ? player2[1] : 0 : 0;
+    const [ chat, setChat ] = useState([]);
+    const [ message, setMessage ] = useState('');
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -34,6 +35,7 @@ function Game() {
                 console.log("connected")
                 client.subscribe(`/move/${id}`);
                 client.subscribe(`/addplayers/${id}`);
+                client.subscribe(`/chat/${id}`);
             })
 
             getBoard();
@@ -55,7 +57,10 @@ function Game() {
                 if (topic.toString() === `/status/${id}`) {
                     const status = JSON.parse(message.toString());
                     setTurn(status.turn);
-            };
+                };
+                if (topic.toString() === `/chat/${id}`) {
+                    setChat([...chat, message.toString()]);
+                }
             });
             axios.get(`http://localhost:${port}/games/${id}`)
             .then(res => {
@@ -65,7 +70,21 @@ function Game() {
             .catch(err => console.log(err));
         }
 
-    }, [client, id])
+    }, [client, id, chat])
+
+    const getPlayer = (name) => {
+        if (player1) {
+            if(player1.includes(name)) {
+                return player1[1];
+            }
+        }
+        if (player2) {
+            if(player2.includes(name)) {
+                return player2[1];
+            }
+        }
+        return 0;
+    }
 
     const getBoard = () => {
         axios.get(`http://localhost:${port}/games/${id}/board`).then((res) => {
@@ -76,6 +95,7 @@ function Game() {
     const makeMove = (player, col) => {
         axios.post(`http://localhost:${port}/games/${id}`, { player, col })
             .catch(err => console.log(err));
+        console.log(player);
     };
 
     const sendParticipant = () => {
@@ -97,6 +117,9 @@ function Game() {
             }).catch(err => console.log(err));
     };
 
+    const publishMessage = (message) => {
+        client.publish(`/chat/${id}`, name + ": " + message);
+    };
 
 
     return (
@@ -164,7 +187,7 @@ function Game() {
                                 {board && board.map((col, n) => {
                                     return col.map((el, id) => {
                                         return (
-                                            <div key={id} onClick={() => {makeMove(player, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
+                                            <div key={id} onClick={() => {makeMove(getPlayer(name), n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
                                             </div>
                                         )
                                     })
@@ -172,17 +195,24 @@ function Game() {
                             </div>
                             <div className="chatbox">
                                 <h3>Chat</h3>
+                                {chat && chat.map((message, id) => (
+                                    <div key={id}>
+                                        <p>{message}</p>
+                                    </div>
+                                ))}
                                 <div>
                                     <TextField
                                         label="Send message"
                                         id="filled-start-adornment"
+                                        value={message}
+                                        onChange={e => setMessage(e.target.value)}
                                         sx={{ m: 2, width: '25ch' }}
                                         InputProps={{
                                             startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
                                         }}
                                         variant="filled"
                                         />
-                                    <Button>
+                                    <Button onClick={() => {publishMessage(message)}}>
                                         <SendIcon/>
                                     </Button>
                                 </div>
