@@ -22,6 +22,7 @@ function Game() {
     const [ name, setName ] = useState('');
     const [ visible, setVisible ] = useState(false);
     const [ nameTaken, setNameTaken ] = useState(false);
+    const player = player1 ? player1.includes(name) ? player1[1] : 0 : player2 ? player2.includes(name) ? player2[1] : 0 : 0;
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -69,11 +70,21 @@ function Game() {
             .catch(err => console.log(err));
     };
 
-    const sendPlayer = () => {
+    const sendParticipant = () => {
         axios.post(`http://localhost:${port}/games/${id}/add`, { name }).then((res) => {
             setNameTaken(!res.data.wasParticipantAdded);
             setVisible(res.data.wasParticipantAdded);
         }).catch(err => console.log(err));
+    };
+
+    const sendPlayer = (name, color) => {
+        axios.post(`http://localhost:${port}/games/${id}/play`, { name }).then(() => {
+            if ( color === 1 ) {
+                setPlayer1([name, color]);
+            } else {
+                setPlayer2([name, color]);
+            }
+            }).catch(err => console.log(err));
     };
 
 
@@ -90,7 +101,7 @@ function Game() {
                                     value={name}
                                     label="Type your name..." variant="outlined"
                                 />
-                            <Button onClick={() => sendPlayer()}>Confirm</Button>
+                            <Button onClick={() => sendParticipant()}>Confirm</Button>
                         </div>
                         :
                         <div>
@@ -100,7 +111,7 @@ function Game() {
                                     error
                                     label="Name is taken..." variant="outlined"
                                 />
-                            <Button onClick={() => sendPlayer()}>Confirm</Button>
+                            <Button onClick={() => sendParticipant()}>Confirm</Button>
                         </div>
                     }
                 </div>
@@ -114,7 +125,7 @@ function Game() {
                         :
                             <div>
                                 <Button
-                                    onClick={() => {}}
+                                    onClick={() => {sendPlayer(name, 1)}}
                                     id="yellowButton"
                                 >
                                     Play as Yellow
@@ -128,7 +139,7 @@ function Game() {
                         :
                         <div>
                             <Button
-                                onClick={() => {}}
+                                onClick={() => {sendPlayer(name, 2)}}
                                 id="redButton"
                             >
                                 Play as Red
@@ -142,7 +153,7 @@ function Game() {
                                 {board && board.map((col, n) => {
                                     return col.map((el, id) => {
                                         return (
-                                            <div key={id} onClick={() => {makeMove(1, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
+                                            <div key={id} onClick={() => {makeMove(player, n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
                                             </div>
                                         )
                                     })
