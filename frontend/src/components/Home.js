@@ -17,6 +17,10 @@ function Home() {
     const [ visible, setVisible ] = useState(false);
     const [ nameTaken, setNameTaken ] = useState(false);
     const [ name, setName ] = useState('');
+    const [ password, setPassword ] = useState('');
+    const [ wrongCredentials, setWrongCredentials] = useState(false);
+    const [ newName, setNewName ] = useState('');
+    const [ newPassword, setNewPassword ] = useState('');
 
 
     useEffect(() => {
@@ -64,11 +68,17 @@ function Home() {
     }
 
     const sendUser = () => {
-        axios.post(`http://localhost:${port}/addUser`, { name, password:"password" }).then((res) => {
+        axios.post(`http://localhost:${port}/users/add`, { newName, newPassword}).then((res) => {
             setNameTaken(!res.data.wasUserAdded);
-            setVisible(res.data.wasUserAdded);
         }).catch(err => console.log(err));
     };
+
+    const login = () => {
+        axios.post(`http://localhost:${port}/users/login`, { name, password }).then((res) => {
+            setVisible(res.data.loggedIn);
+            setWrongCredentials(!res.data.loggedIn);
+        }).catch(err => console.log(err));
+    }
 
     const indexOfLastGame = currentPage * gamesPerPage;
     const indexOfFirstGame = indexOfLastGame - gamesPerPage;
@@ -78,26 +88,84 @@ function Home() {
         <div>
             <h2>CONNECT4 GAME</h2>
             { !visible ?
-                <div>    
+                <div className="registerAndLoginForms">    
                     {!nameTaken ? 
                         <div>
-                            <TextField
-                                    onChange={(e) => setName(e.target.value)}
-                                    value={name}
-                                    label="Type your name..." variant="outlined"
-                                />
+                            <h3>Add User</h3>
+                            <div className="inputsContainer">
+                                <TextField
+                                        onChange={(e) => setNewName(e.target.value)}
+                                        value={newName}
+                                        label="Choose name..." variant="outlined"
+                                    />
+                                <TextField
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        value={newPassword}
+                                        label="Choose password..." variant="outlined"
+                                        type="password"
+                                    />
+                            </div>
                             <Button onClick={() => sendUser()}>Confirm</Button>
                         </div>
                         :
                         <div>
-                            <TextField
-                                    onChange={(e) => setName(e.target.value)}
-                                    value={name}
-                                    error
-                                    label="Name is taken..." variant="outlined"
-                                />
+                            <h3>Add User</h3>
+                            <div className="inputsContainer">
+                                <TextField
+                                        onChange={(e) => setNewName(e.target.value)}
+                                        value={newName}
+                                        error
+                                        label="Name is taken..." variant="outlined"
+                                    />
+                                <TextField
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        value={newPassword}
+                                        label="Choose password..." variant="outlined"
+                                        type="password"
+                                    />
+                            </div>
                             <Button onClick={() => sendUser()}>Confirm</Button>
                         </div>
+                    }
+                    {
+                        !wrongCredentials ? 
+                            <div>
+                                <h3>Login</h3>
+                                <div className="inputsContainer">
+                                    <TextField
+                                        onChange={(e) => setName(e.target.value)}
+                                        value={name}
+                                        label="Type your name..." variant="outlined"
+                                    />
+                                    <TextField
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        value={password}
+                                        label="Type password..." variant="outlined"
+                                        type="password"
+                                    />
+                                </div>
+                                <Button onClick={() => login()}>Confirm</Button>
+                            </div>
+                            :
+                            <div>
+                                <h3>Login</h3>
+                                <div className="inputsContainer">
+                                    <TextField
+                                        onChange={(e) => setName(e.target.value)}
+                                        value={name}
+                                        error
+                                        label="Wrong credentials..." variant="outlined"
+                                    />
+                                    <TextField
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        value={password}
+                                        error
+                                        label="Wrong credentials..." variant="outlined"
+                                        type="password"
+                                    />
+                                </div>
+                                <Button onClick={() => login()}>Confirm</Button>
+                            </div>
                     }
                 </div>
                 :

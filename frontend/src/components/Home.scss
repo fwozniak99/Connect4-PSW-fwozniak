@@ -45,3 +45,20 @@
         }
     }
 }
+
+.registerAndLoginForms {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    h3 {
+        margin-bottom: 40px;
+    }
+    .inputsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+    button {
+        margin-top: 20px;
+    }
+}
