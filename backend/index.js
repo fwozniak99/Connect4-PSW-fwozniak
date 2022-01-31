@@ -140,11 +140,15 @@ app.post('/users/add', (req, res) => {
     try {
         const { newName, newPassword } = req.body;
         const usernames = allUsers.map(user => user[0])
-        if (!usernames.includes(newName)) {
-            allUsers.push([newName, newPassword]);
-            res.send({ wasUserAdded: true });
-        } else {
+        
+        if (usernames.includes(newName)) {
             res.send({ wasUserAdded: false });
+        } else if (newName==="" || newPassword==="") {
+            res.send({ wasUserAdded: false });
+        } else {
+            allUsers.push([newName, newPassword]);
+            console.log(allUsers)
+            res.send({ wasUserAdded: true });
         }
     } catch(err) {
         console.log(err);
