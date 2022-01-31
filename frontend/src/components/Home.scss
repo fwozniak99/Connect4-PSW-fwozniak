@@ -28,5 +28,14 @@
                 text-decoration: underline;
             }
         }
+        .deleteButton {
+            &:hover {
+                background-color: #75b5f5;
+                transition-duration: 0.2s;
+            }
+            .deleteIcon {
+                color: white;
+            }
+        }
     }
 }

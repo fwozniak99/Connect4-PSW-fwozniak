@@ -84,7 +84,6 @@ class Game {
                 this.turn = 1;
             }
         }
-        console.log("turn " + this.turn);
         client.publish(`/move/${this.id}`, JSON.stringify({ board: this.board, turn: this.turn }));
     }
 
@@ -114,6 +113,20 @@ app.post('/games', (req, res) => {
         client.publish('/games', id);
 
         res.send({ newGame: id });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+app.delete('/games/:id', (req, res) => {
+    try {
+        const id = req.params.id;
+        const newGames = allGames.filter(game => id !== game.id);
+        allGames = newGames;
+        client.publish('/games/delete', id);
+
+        res.send({ deltedGameId: id });
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });

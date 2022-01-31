@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import './Home.scss';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 const port = 8080;
 
 
@@ -21,6 +22,7 @@ function Home() {
             client.on('connect', () => {
                 console.log("connected")
                 client.subscribe('/games');
+                client.subscribe('/games/delete');
             })
 
             getAllGames();
@@ -28,6 +30,11 @@ function Home() {
             client.on('message', (topic, message) => {
                 if (topic.toString() === '/games') {
                     getAllGames();
+                }
+                if (topic.toString() === '/games/delete') {
+                    getAllGames();
+                    //const deletedGameId = JSON.parse(message.toString())
+                    //setGames(games.filter(game => game.id !== deletedGameId));
                 }
             });
         }
@@ -45,6 +52,11 @@ function Home() {
         .catch(error => console.log(error));
     }
 
+    const deleteGame = (id) => {
+        axios.delete(`http://localhost:${port}/games/${id}`)
+        .catch(error => console.log(error));
+    }
+
     return (
         <div>
             <h2>CONNECT4 GAME</h2>
@@ -56,6 +68,9 @@ function Home() {
                     <div key={game.id} className="roomContainer">
                         <Link to={`/games/${game.id}`}>ENTER GAME</Link>
                         <p>id: {game.id}</p>
+                        <Button onClick={() => deleteGame(game.id)} className="deleteButton">
+                            <DeleteOutlineIcon className="deleteIcon"/>
+                        </Button>
                     </div>
                     )}
                 )}
