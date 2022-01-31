@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { TextField } from '@mui/material';
+import { TextField, Typography } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SendIcon from '@mui/icons-material/Send';
@@ -73,11 +73,14 @@ function Game() {
             .then(res => {
                 setPlayer1(res.data.player1);
                 setPlayer2(res.data.player2);
+                if (res.data.winner) {
+                    setWinner(res.data.winner);
+                }
             })
             .catch(err => console.log(err));
         }
 
-    }, [client, id, chat])
+    }, [client, id, chat, winner])
 
     const getPlayer = (name) => {
         if (player1) {
@@ -128,6 +131,14 @@ function Game() {
         setMessage("");
     };
 
+    const getResults = (winner) => {
+        if (player1.includes(winner)) {
+            return `${player1} wins!`;
+        } else {
+            return `${player2} wins!`;
+        }
+    }
+
 
     return (
         <div className="pageContainer">
@@ -157,86 +168,89 @@ function Game() {
                     }
                 </div>
                 :
-                <div className="gameAndChatContainer">
-                    <div className="playerButtons">
-                        {player1 ? 
-                            <div id="yellowTypography">
-                                {player1[0]} is yellow!
-                            </div> 
-                        :
-                            <div>
-                                <Button
-                                    onClick={() => {sendPlayer1(name)}}
-                                    id="yellowButton"
-                                >
-                                    Play as Yellow
-                                </Button>
-                            </div>}
+                <div>
+                    {!winner ? 
+                        <div className="gameAndChatContainer">
+                            <div className="playerButtons">
+                                {player1 ? 
+                                    <div id="yellowTypography">
+                                        {player1[0]} is yellow!
+                                    </div> 
+                                :
+                                    <div>
+                                        <Button
+                                            onClick={() => {sendPlayer1(name)}}
+                                            id="yellowButton"
+                                        >
+                                            Play as Yellow
+                                        </Button>
+                                    </div>}
 
-                        {player2 ? 
-                            <div id="redTypography">
-                                {player2[0]} is red!
-                            </div>
-                        :
-                        <div>
-                            <Button
-                                onClick={() => {sendPlayer2(name)}}
-                                id="redButton"
-                            >
-                                Play as Red
-                            </Button>
-                        </div>}
-                    </div>
-
-                    {!winner ?        
-                    <div>
-                        <div className="gameContainer">
-                                {board && board.map((col, n) => {
-                                    return col.map((el, id) => {
-                                        return (
-                                            <div key={id} onClick={() => {
-                                                if (status === true){
-                                                    if (turn === getPlayer(name)) {
-                                                        makeMove(getPlayer(name), n);
-                                                    }
-                                                }
-                                                }} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
-                                            </div>
-                                        )
-                                    })
-                                })}
-                            </div>
-                            <div className="chatbox">
-                                <h3>Chat</h3>
-                                <div className="chatInputContainer">
-                                    <TextField
-                                        label="Send message"
-                                        id="filled-start-adornment"
-                                        value={message}
-                                        onChange={e => { setMessage(e.target.value)} }
-                                        sx={{ width: '35ch' }}
-                                        InputProps={{
-                                            startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
-                                        }}
-                                        variant="filled"
-                                        />
-                                    <Button onClick={() => {publishMessage(message)}} id="chatButton">
-                                        <SendIcon/>
+                                {player2 ? 
+                                    <div id="redTypography">
+                                        {player2[0]} is red!
+                                    </div>
+                                :
+                                <div>
+                                    <Button
+                                        onClick={() => {sendPlayer2(name)}}
+                                        id="redButton"
+                                    >
+                                        Play as Red
                                     </Button>
-                                </div>
-                                <div className="messagebox">
-                                    {chat && chat.map((message, id) => (
-                                        <div key={id} >
-                                            <p>{message}</p>
+                                </div>}
+                            </div>
+
+                                
+                            <div>
+                                <div className="gameContainer">
+                                        {board && board.map((col, n) => {
+                                            return col.map((el, id) => {
+                                                return (
+                                                    <div key={id} onClick={() => {
+                                                        if (status === true){
+                                                            if (turn === getPlayer(name)) {
+                                                                makeMove(getPlayer(name), n);
+                                                            }
+                                                        }
+                                                        }} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
+                                                    </div>
+                                                )
+                                            })
+                                        })}
+                                    </div>
+                                    <div className="chatbox">
+                                        <h3>Chat</h3>
+                                        <div className="chatInputContainer">
+                                            <TextField
+                                                label="Send message"
+                                                id="filled-start-adornment"
+                                                value={message}
+                                                onChange={e => { setMessage(e.target.value)} }
+                                                sx={{ width: '35ch' }}
+                                                InputProps={{
+                                                    startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
+                                                }}
+                                                variant="filled"
+                                                />
+                                            <Button onClick={() => {publishMessage(message)}} id="chatButton">
+                                                <SendIcon/>
+                                            </Button>
                                         </div>
-                                    ))}
-                                </div>
-                            </div> 
-                    </div>
-                    : 
-                    <div>
-                        { winner===getPlayer(name) ? `${name}, you win, congratulations!` : `${name}, you lose!`}
-                    </div>
+                                        <div className="messagebox">
+                                            {chat && chat.map((message, id) => (
+                                                <div key={id} >
+                                                    <p>{message}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div> 
+                            </div>
+                        </div>
+                        : 
+                        <Typography align="center" variant="h2">
+                            { getResults(winner) }
+                        </Typography>
                     }
                 </div>
                 }

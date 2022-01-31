@@ -216,7 +216,7 @@ app.get('/games/:id', (req, res) => {
         const id = req.params.id;
         const game = allGames.find(game => id === game.id);
 
-        res.send({ player1: game.player1, player2: game.player2});
+        res.send({ player1: game.player1, player2: game.player2, winner: game.winner });
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });
