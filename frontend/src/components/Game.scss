@@ -56,7 +56,25 @@
                 .chatbox {
                     display: flex;
                     flex-direction: column;
-                    height: 75px;
+                    .messagebox {
+                        margin-left: 50px;
+                        display: flex;
+                        flex-direction: column;
+                        height: 250px;
+                        overflow: auto;
+                        overflow-y: auto;
+                        margin-top: 5px;
+                        border: 1px solid rgb(153, 154, 155);
+                        padding: 5px;
+                        border-radius: 2%;
+                    }
+                }
+                .chatInputContainer {
+                    display: flex;
+                    margin-left: 50px;
+                    #chatButton {
+                        border: 1px solid #42a5f5;
+                    }
                 }
             }
         }

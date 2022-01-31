@@ -60,7 +60,7 @@ function Game() {
                     setStatus(status.active);
                 };
                 if (topic.toString() === `/chat/${id}`) {
-                    setChat([...chat, message.toString()]);
+                    setChat([message.toString(), ...chat]);
                 }
             });
             axios.get(`http://localhost:${port}/games/${id}`)
@@ -119,6 +119,7 @@ function Game() {
 
     const publishMessage = (message) => {
         client.publish(`/chat/${id}`, name + ": " + message);
+        setMessage("");
     };
 
 
@@ -189,7 +190,6 @@ function Game() {
                                         return (
                                             <div key={id} onClick={() => {
                                                 if (status === true){
-                                                    console.log("turn "+turn);
                                                     if (turn === getPlayer(name)) {
                                                         makeMove(getPlayer(name), n);
                                                     }
@@ -202,26 +202,28 @@ function Game() {
                             </div>
                             <div className="chatbox">
                                 <h3>Chat</h3>
-                                {chat && chat.map((message, id) => (
-                                    <div key={id}>
-                                        <p>{message}</p>
-                                    </div>
-                                ))}
-                                <div>
+                                <div className="chatInputContainer">
                                     <TextField
                                         label="Send message"
                                         id="filled-start-adornment"
                                         value={message}
-                                        onChange={e => setMessage(e.target.value)}
-                                        sx={{ m: 2, width: '25ch' }}
+                                        onChange={e => { setMessage(e.target.value)} }
+                                        sx={{ width: '35ch' }}
                                         InputProps={{
                                             startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
                                         }}
                                         variant="filled"
                                         />
-                                    <Button onClick={() => {publishMessage(message)}}>
+                                    <Button onClick={() => {publishMessage(message)}} id="chatButton">
                                         <SendIcon/>
                                     </Button>
+                                </div>
+                                <div className="messagebox">
+                                    {chat && chat.map((message, id) => (
+                                        <div key={id} >
+                                            <p>{message}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                     </div>
