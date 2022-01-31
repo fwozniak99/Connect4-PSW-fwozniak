@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import mqtt from 'mqtt';
 import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
+import { Button, Pagination } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import './Home.scss';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -12,6 +12,9 @@ const port = 8080;
 function Home() {
     const [ games, setGames ] = useState([]);
     const [ client, setClient ] = useState(null);
+    const [ currentPage, setCurrentPage ] = useState(1);
+    const gamesPerPage = 4;
+
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -57,13 +60,17 @@ function Home() {
         .catch(error => console.log(error));
     }
 
+    const indexOfLastGame = currentPage * gamesPerPage;
+    const indexOfFirstGame = indexOfLastGame - gamesPerPage;
+    const displayedGames = games.slice(indexOfFirstGame, indexOfLastGame)
+
     return (
         <div>
             <h2>CONNECT4 GAME</h2>
             <Button onClick={() => {createNewGame()}} variant="contained" startIcon={<AddCircleOutlineIcon/>}>Create a new game</Button>
             <h3 id="gamesTypography">List of games</h3>
             <div className="listContainer">
-                {games && games.map(game => {
+                {displayedGames && displayedGames.map(game => {
                     return (
                     <div key={game.id} className="roomContainer">
                         <Link to={`/games/${game.id}`}>ENTER GAME</Link>
@@ -74,6 +81,9 @@ function Home() {
                     </div>
                     )}
                 )}
+            </div>
+            <div id="paginationContainer">
+                    <Pagination color="primary" count={ Math.ceil(games.length / gamesPerPage) } siblingCount={0} onChange={(event, value) => {setCurrentPage(value)}} />
             </div>
         </div>
     )
