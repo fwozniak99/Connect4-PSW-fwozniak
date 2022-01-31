@@ -23,12 +23,11 @@ class Game {
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0] ];
-        this.active = false;
         this.message = "";
         this.player1 = null;
         this.player2 = null;
         this.over = false;
-        this.turn = 0;
+        this.turn = 1;
     }
 
     addParticipant(name) {
@@ -78,6 +77,14 @@ class Game {
 
     makeMove(col, player, row) {
         this.board[col][row] = player;
+        if (player !== 0) {
+            if (this.turn === 1) {
+                this.turn = 2;
+            } else {
+                this.turn = 1;
+            }
+        }
+        console.log("turn " + this.turn);
         client.publish(`/move/${this.id}`, JSON.stringify({ board: this.board, turn: this.turn }));
     }
 
@@ -138,15 +145,15 @@ app.post('/games/:id/play', (req, res) => {
         const game = allGames.find(game => id === game.id);
 
         if (player1) {
-            game.player1 = [player1, color];
+            game.player1 = player1;
         } else {
-            game.player2 = [player2, color];
+            game.player2 = player2;
         }
 
         client.publish(`/addplayers/${id}`, JSON.stringify({ player1, player1color: 1, player2, player2color: 2 }));
 
         if( game.player1 && game.player2 ) {
-            client.publish(`/status/${id}`, JSON.stringify({ turn: this.turn }));
+            client.publish(`/status/${id}`, JSON.stringify({ active: true }));
         }
 
         res.send({ wasPlayerAdded: true });
@@ -179,6 +186,7 @@ app.post('/games/:id', (req, res) => {
             if(game.isOver(player)) {
                 game.over = true;
                 game.message = `${player} wins!`
+                //client.publish(`/status/${id}`, JSON.stringify({ over: true }));
             };
         }
 

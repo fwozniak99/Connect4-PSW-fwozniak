@@ -17,8 +17,8 @@ function Game() {
     const [ client, setClient ] = useState(null);
     const [ player1, setPlayer1 ] = useState(null);
     const [ player2, setPlayer2 ] = useState(null);
-    const [ status, setStatus ] = useState();
-    const [ turn, setTurn ] = useState();
+    const [ status, setStatus ] = useState(false);
+    const [ turn, setTurn ] = useState(1);
     const [ name, setName ] = useState('');
     const [ visible, setVisible ] = useState(false);
     const [ nameTaken, setNameTaken ] = useState(false);
@@ -36,6 +36,7 @@ function Game() {
                 client.subscribe(`/move/${id}`);
                 client.subscribe(`/addplayers/${id}`);
                 client.subscribe(`/chat/${id}`);
+                client.subscribe(`/status/${id}`);
             })
 
             getBoard();
@@ -56,7 +57,7 @@ function Game() {
                 }
                 if (topic.toString() === `/status/${id}`) {
                     const status = JSON.parse(message.toString());
-                    setTurn(status.turn);
+                    setStatus(status.active);
                 };
                 if (topic.toString() === `/chat/${id}`) {
                     setChat([...chat, message.toString()]);
@@ -95,7 +96,6 @@ function Game() {
     const makeMove = (player, col) => {
         axios.post(`http://localhost:${port}/games/${id}`, { player, col })
             .catch(err => console.log(err));
-        console.log(player);
     };
 
     const sendParticipant = () => {
@@ -187,7 +187,14 @@ function Game() {
                                 {board && board.map((col, n) => {
                                     return col.map((el, id) => {
                                         return (
-                                            <div key={id} onClick={() => {makeMove(getPlayer(name), n)}} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
+                                            <div key={id} onClick={() => {
+                                                if (status === true){
+                                                    console.log("turn "+turn);
+                                                    if (turn === getPlayer(name)) {
+                                                        makeMove(getPlayer(name), n);
+                                                    }
+                                                }
+                                                }} className="tokenContainer" style={el===1 ? {backgroundColor: "#FFBF00"} : el===2 ? {backgroundColor: "#EE4B2B"} : {backgroundColor: "#6495ED"}}>
                                             </div>
                                         )
                                     })
