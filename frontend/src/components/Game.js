@@ -24,6 +24,7 @@ function Game() {
     const [ nameTaken, setNameTaken ] = useState(false);
     const [ chat, setChat ] = useState([]);
     const [ message, setMessage ] = useState('');
+    const [ winner, setWinner ] = useState(null);
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -37,6 +38,7 @@ function Game() {
                 client.subscribe(`/addplayers/${id}`);
                 client.subscribe(`/chat/${id}`);
                 client.subscribe(`/status/${id}`);
+                client.subscribe(`/results/${id}`);
             })
 
             getBoard();
@@ -61,6 +63,10 @@ function Game() {
                 };
                 if (topic.toString() === `/chat/${id}`) {
                     setChat([message.toString(), ...chat]);
+                }
+                if (topic.toString() === `/results/${id}`) {
+                    const results = JSON.parse(message.toString());
+                    setWinner(results.winner);
                 }
             });
             axios.get(`http://localhost:${port}/games/${id}`)
@@ -182,7 +188,7 @@ function Game() {
                         </div>}
                     </div>
 
-
+                    {!winner ?        
                     <div>
                         <div className="gameContainer">
                                 {board && board.map((col, n) => {
@@ -225,8 +231,13 @@ function Game() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </div> 
                     </div>
+                    : 
+                    <div>
+                        { winner===getPlayer(name) ? `${name}, you win, congratulations!` : `${name}, you lose!`}
+                    </div>
+                    }
                 </div>
                 }
             </div>

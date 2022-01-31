@@ -23,11 +23,11 @@ class Game {
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0] ];
-        this.message = "";
         this.player1 = null;
         this.player2 = null;
         this.over = false;
         this.turn = 1;
+        this.winner = null;
     }
 
     addParticipant(name) {
@@ -141,6 +141,7 @@ app.post('/games/:id/add', (req, res) => {
 
         if (!game.participants.includes(name)) {
             game.addParticipant(name);
+            client.publish(`/results/${id}`, JSON.stringify({ winner: game.winner }))
             res.send({ wasParticipantAdded: true });
         } else {
             res.send({ wasParticipantAdded: false });
@@ -162,7 +163,7 @@ app.post('/games/:id/play', (req, res) => {
         } else {
             game.player2 = player2;
         }
-
+        
         client.publish(`/addplayers/${id}`, JSON.stringify({ player1, player1color: 1, player2, player2color: 2 }));
 
         if( game.player1 && game.player2 ) {
@@ -198,8 +199,8 @@ app.post('/games/:id', (req, res) => {
             game.makeMove(col, player, game.getAvailableRow(col));
             if(game.isOver(player)) {
                 game.over = true;
-                game.message = `${player} wins!`
-                //client.publish(`/status/${id}`, JSON.stringify({ over: true }));
+                game.winner = player;
+                client.publish(`/results/${id}`, JSON.stringify({ winner: player }))
             };
         }
 
