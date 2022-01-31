@@ -30,6 +30,7 @@ class Game {
         this.turn = 1;
         this.winner = null;
         this.comments = [];
+        this.status = false;
     }
 
     addParticipant(name) {
@@ -185,7 +186,8 @@ app.post('/games/:id/play', (req, res) => {
         client.publish(`/addplayers/${id}`, JSON.stringify({ player1, player1color: 1, player2, player2color: 2 }));
 
         if( game.player1 && game.player2 ) {
-            client.publish(`/status/${id}`, JSON.stringify({ active: true }));
+            game.status = true;
+            client.publish(`/status/${id}`, JSON.stringify({ active: game.status }));
         }
 
         res.send({ wasPlayerAdded: true });
@@ -234,7 +236,7 @@ app.get('/games/:id', (req, res) => {
         const id = req.params.id;
         const game = allGames.find(game => id === game.id);
 
-        res.send({ player1: game.player1, player2: game.player2, winner: game.winner });
+        res.send({ player1: game.player1, player2: game.player2, winner: game.winner, turn: game.turn, status: game.status });
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });

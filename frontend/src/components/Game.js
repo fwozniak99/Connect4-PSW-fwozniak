@@ -76,6 +76,8 @@ function Game() {
             .then(res => {
                 setPlayer1([res.data.player1, 1]);
                 setPlayer2([res.data.player2, 2]);
+                setTurn(res.data.turn);
+                setStatus(res.data.status);
                 if (res.data.winner) {
                     setWinner(res.data.winner);
                 }
