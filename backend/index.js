@@ -11,6 +11,7 @@ const mqtt = require('mqtt');
 const client = mqtt.connect('ws://localhost:8000');
 
 let allGames = [];
+let allUsers = [];
 
 class Game {
     constructor(id) {
@@ -128,6 +129,22 @@ app.delete('/games/:id', (req, res) => {
         client.publish('/games/delete', id);
 
         res.send({ deltedGameId: id });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+app.post('/addUser', (req, res) => {
+    try {
+        const { name, password } = req.body;
+
+        if (!allUsers.includes(name)) {
+            allUsers.push([name, password]);
+            res.send({ wasUserAdded: true });
+        } else {
+            res.send({ wasUserAdded: false });
+        }
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });

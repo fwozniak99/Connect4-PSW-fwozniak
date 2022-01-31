@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { TextField, Typography } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -19,13 +19,14 @@ function Game() {
     const [ player2, setPlayer2 ] = useState(null);
     const [ status, setStatus ] = useState(false);
     const [ turn, setTurn ] = useState(1);
-    const [ name, setName ] = useState('');
     const [ visible, setVisible ] = useState(false);
     const [ nameTaken, setNameTaken ] = useState(false);
     const [ chat, setChat ] = useState([]);
     const [ message, setMessage ] = useState('');
     const [ winner, setWinner ] = useState(null);
     const [ chosen, setChosen ] = useState(false);
+    const location = useLocation()
+    const { name } = location.state;
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -42,6 +43,7 @@ function Game() {
                 client.subscribe(`/results/${id}`);
             })
 
+            sendParticipant(name);
             getBoard();
 
             client.on('message', (topic, message) => {
@@ -81,7 +83,7 @@ function Game() {
             .catch(err => console.log(err));
         }
 
-    }, [client, id, chat, winner])
+    }, [client, id, chat, winner, name])
 
     const getPlayer = (name) => {
         if (player1) {
@@ -145,35 +147,10 @@ function Game() {
         <div className="pageContainer">
             <h2>Game {id}</h2>
             <div className="mainContainer">
-                { !visible ?
-                <div>    
-                    {!nameTaken ? 
-                        <div>
-                            <TextField
-                                    onChange={(e) => setName(e.target.value)}
-                                    value={name}
-                                    label="Type your name..." variant="outlined"
-                                />
-                            <Button onClick={() => sendParticipant()}>Confirm</Button>
-                        </div>
-                        :
-                        <div>
-                            <TextField
-                                    onChange={(e) => setName(e.target.value)}
-                                    value={name}
-                                    error
-                                    label="Name is taken..." variant="outlined"
-                                />
-                            <Button onClick={() => sendParticipant()}>Confirm</Button>
-                        </div>
-                    }
-                </div>
-                :
-                <div>
                     {!winner ? 
                         <div className="gameAndChatContainer">
                             <div className="playerButtons">
-                                {player1[0] ? 
+                                {player1 ? player1[0] ? 
                                     <div id="yellowTypography">
                                         {player1[0]} is yellow!
                                     </div> 
@@ -186,12 +163,33 @@ function Game() {
                                         >
                                             Play as Yellow
                                         </Button>
-                                    </div>}
+                                    </div>
+                                :
+                                <div>
+                                <Button
+                                    disabled={chosen}
+                                    onClick={() => {sendPlayer1(name); setChosen(true)}}
+                                    id="yellowButton"
+                                >
+                                    Play as Yellow
+                                </Button>
+                            </div>
+                                }
 
-                                {player2[0] ? 
+                                {player2 ? player2[0] ?
                                     <div id="redTypography">
                                         {player2[0]} is red!
                                     </div>
+                                :
+                                <div>
+                                    <Button
+                                        disabled={chosen}
+                                        onClick={() => {sendPlayer2(name); setChosen(true)}}
+                                        id="redButton"
+                                    >
+                                        Play as Red
+                                    </Button>
+                                </div>
                                 :
                                 <div>
                                     <Button
@@ -256,8 +254,6 @@ function Game() {
                         </Typography>
                     }
                 </div>
-                }
-            </div>
         </div>
     )
 }
