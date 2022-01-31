@@ -28,6 +28,7 @@ class Game {
         this.over = false;
         this.turn = 1;
         this.winner = null;
+        this.comments = [];
     }
 
     addParticipant(name) {

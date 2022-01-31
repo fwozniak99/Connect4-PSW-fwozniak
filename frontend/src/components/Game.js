@@ -25,6 +25,7 @@ function Game() {
     const [ chat, setChat ] = useState([]);
     const [ message, setMessage ] = useState('');
     const [ winner, setWinner ] = useState(null);
+    const [ chosen, setChosen ] = useState(false);
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -179,7 +180,8 @@ function Game() {
                                 :
                                     <div>
                                         <Button
-                                            onClick={() => {sendPlayer1(name)}}
+                                            disabled={chosen}
+                                            onClick={() => {sendPlayer1(name); setChosen(true)}}
                                             id="yellowButton"
                                         >
                                             Play as Yellow
@@ -193,7 +195,8 @@ function Game() {
                                 :
                                 <div>
                                     <Button
-                                        onClick={() => {sendPlayer2(name)}}
+                                        disabled={chosen}
+                                        onClick={() => {sendPlayer2(name); setChosen(true)}}
                                         id="redButton"
                                     >
                                         Play as Red
