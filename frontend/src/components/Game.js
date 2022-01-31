@@ -72,8 +72,8 @@ function Game() {
             });
             axios.get(`http://localhost:${port}/games/${id}`)
             .then(res => {
-                setPlayer1(res.data.player1);
-                setPlayer2(res.data.player2);
+                setPlayer1([res.data.player1, 1]);
+                setPlayer2([res.data.player2, 2]);
                 if (res.data.winner) {
                     setWinner(res.data.winner);
                 }
@@ -134,9 +134,9 @@ function Game() {
 
     const getResults = (winner) => {
         if (player1.includes(winner)) {
-            return `${player1} wins!`;
+            return `${player1[0]} wins!`;
         } else {
-            return `${player2} wins!`;
+            return `${player2[0]} wins!`;
         }
     }
 
@@ -173,7 +173,7 @@ function Game() {
                     {!winner ? 
                         <div className="gameAndChatContainer">
                             <div className="playerButtons">
-                                {player1 ? 
+                                {player1[0] ? 
                                     <div id="yellowTypography">
                                         {player1[0]} is yellow!
                                     </div> 
@@ -188,7 +188,7 @@ function Game() {
                                         </Button>
                                     </div>}
 
-                                {player2 ? 
+                                {player2[0] ? 
                                     <div id="redTypography">
                                         {player2[0]} is red!
                                     </div>
