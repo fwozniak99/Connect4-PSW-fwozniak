@@ -94,11 +94,10 @@ function UserList() {
                         </Button>
                         <TextField
                                         onChange={(e) => setNewName(e.target.value)}
-                                        value={newName}
                                         label="New name..." variant="outlined"
                                     />
                         <Button onClick={() => editUser(user["name"], newName)} className="editButton">
-                                        <EditIcon className="deleteIcon"/>
+                                        <EditIcon className="editIcon"/>
                         </Button>
                     </div>
                 )
