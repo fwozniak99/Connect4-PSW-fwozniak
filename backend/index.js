@@ -100,7 +100,7 @@ class Game {
     }
 }
 
-//GET /users - pobieranie użytkowników
+//GET /users - getting users
 app.get('/users', (req, res) => {
     try {
         res.send({ users: allUsers })
@@ -110,7 +110,7 @@ app.get('/users', (req, res) => {
     }
 })
 
-//POST /users/add - rejestracja
+//POST /users/add - registering
 app.post('/users/add', async (req, res) => {
     try {
         const { newName, newPassword } = req.body;
@@ -135,7 +135,7 @@ app.post('/users/add', async (req, res) => {
 })
 
 
-//POST /users/login - logowanie
+//POST /users/login - logging in
 app.post('/users/login', async (req, res) => {
     try {
         const { name, password } = req.body;
@@ -153,7 +153,7 @@ app.post('/users/login', async (req, res) => {
     }
 })
 
-//DELETE /users - usuwanie użykownika
+//DELETE /users - deleting an user
 app.delete('/users/:name', (req, res) => {
     try {
         const name = req.params.name;
@@ -167,7 +167,25 @@ app.delete('/users/:name', (req, res) => {
     }
 })
 
-//GET /games - pobieranie pokoi
+//PUT /users/:name - editing user's name
+app.put('/users/:name', (req, res) => {
+    try {
+        const name = req.params.name;
+        const { newName } = req.body;
+        const userIndex = allUsers.findIndex((obj => obj["name"] === name));
+        const canAdd = allUsers.filter(user => user["name"] === (newName));
+        if (canAdd.length === 0) {
+            allUsers[userIndex]["name"] = newName;
+            client.publish('/users');
+            res.send({ editedUser: name });
+        }
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+//GET /games - getting rooms(games)
 app.get('/games', (req, res) => {
     try {
         res.send({ games: allGames });
@@ -177,6 +195,7 @@ app.get('/games', (req, res) => {
     }
 })
 
+//POST /games - adding rooms(games)
 app.post('/games', (req, res) => {
     try {
         const id = uuidv4();

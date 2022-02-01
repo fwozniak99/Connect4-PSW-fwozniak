@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import { Button, Pagination, Typography, TextField } from '@mui/material';
 import './UserList.scss';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/Edit';
 import Autocomplete from '@mui/material/Autocomplete';
+import Edit from '@mui/icons-material/Edit';
 const port = 8080;
 
 
@@ -15,6 +17,7 @@ function UserList() {
     const [ searchTerm, setSearchTerm ] = useState("");
     const [ currentPage, setCurrentPage ] = useState(1);
     const usersPerPage = 5;
+    const [ newName, setNewName ] = useState("");
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -52,6 +55,12 @@ function UserList() {
         .catch(error => console.log(error));
     }
 
+    const editUser = (name, newName) => {
+        axios.put(`http://localhost:${port}/users/${name}`, { newName })
+        .catch(error => console.log(error));
+        setNewName("");
+    }
+
 
     const indexOfLastUser = currentPage * usersPerPage;
     const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -82,6 +91,14 @@ function UserList() {
                         <Typography className="userContainer" variant="h6">{user["name"]}</Typography>
                         <Button onClick={() => deleteUser(user["name"])} className="deleteButton">
                                         <DeleteOutlineIcon className="deleteIcon"/>
+                        </Button>
+                        <TextField
+                                        onChange={(e) => setNewName(e.target.value)}
+                                        value={newName}
+                                        label="New name..." variant="outlined"
+                                    />
+                        <Button onClick={() => editUser(user["name"], newName)} className="editButton">
+                                        <EditIcon className="deleteIcon"/>
                         </Button>
                     </div>
                 )
