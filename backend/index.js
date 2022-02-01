@@ -210,6 +210,7 @@ app.post('/games', (req, res) => {
     }
 })
 
+//DELETE /games/:id - deleting rooms(games)
 app.delete('/games/:id', (req, res) => {
     try {
         const id = req.params.id;
@@ -224,6 +225,7 @@ app.delete('/games/:id', (req, res) => {
     }
 })
 
+//POST /games/:id/add - adding Participant
 app.post('/games/:id/add', (req, res) => {
     try {
         const id = req.params.id;
@@ -243,6 +245,7 @@ app.post('/games/:id/add', (req, res) => {
     }
 });
 
+//POST /games/:id/play - adding Player
 app.post('/games/:id/play', (req, res) => {
     try {
         const id = req.params.id;
@@ -270,6 +273,7 @@ app.post('/games/:id/play', (req, res) => {
     }
 });
 
+// GET /games/:id/board - getting Game board
 app.get('/games/:id/board', (req, res) => {
     try {
         const id = req.params.id;
@@ -281,7 +285,21 @@ app.get('/games/:id/board', (req, res) => {
     }
 })
 
-app.post('/games/:id', (req, res) => {
+//GET /games/:id - getting whole Game
+app.get('/games/:id', (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = allGames.find(game => id === game.id);
+
+        res.send({ player1: game.player1, player2: game.player2, winner: game.winner, turn: game.turn, status: game.status });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+});
+
+// PUT /games/:id - making a move in the Game
+app.put('/games/:id', (req, res) => {
     try {
         const id = req.params.id;
         const { player, col } = req.body;
@@ -303,17 +321,73 @@ app.post('/games/:id', (req, res) => {
     }
 });
 
-app.get('/games/:id', (req, res) => {
+//GET /comments - getting comments from a game
+app.get('/games/:id/comments', (req, res) => {
     try {
         const id = req.params.id;
         const game = allGames.find(game => id === game.id);
-
-        res.send({ player1: game.player1, player2: game.player2, winner: game.winner, turn: game.turn, status: game.status });
+        res.send({ comments: game.comments });
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });
     }
-});
+})
+
+//POST /games/:id/comment - adding comments to a game
+app.post('/games/:id/comment', (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = allGames.find(game => id === game.id);
+        const commentId = uuidv4();
+        const { name, comment } = req.body;
+
+        game.comments.push([commentId, name, comment]);
+        client.publish(`/comments/${id}`, JSON.stringify({allComments: game.comments}));
+
+        res.send({ newComment: commentId });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+//PUT /games/:id/edit/:commentId - edit a comment
+app.put('/games/:id/editComment/:commentId', (req, res) => {
+    try {
+        const id = req.params.id;
+        const commentId = req.params.commentId;
+        const game = allGames.find(game => id === game.id);
+        const commentId2 = game.comments.findIndex(comment => commentId === comment[0]);
+        const { name, comment } = req.body;
+
+        if (commentId2) {
+            game.comments[commentId2] = [commentId, name, comment];
+            client.publish(`/comments/${id}`, JSON.stringify({allComments: game.comments}));
+            res.send({ newComment: commentId });
+        }
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+//DELETE /games/:id/delete/:commentId - deleting comments
+app.delete('/games/:id/deleteComment/:commentId', (req, res) => {
+    try {
+        const id = req.params.id;
+        const commentId = req.params.commentId;
+        const game = allGames.find(game => id === game.id);
+        if (game) {
+            const newComments = game.comments.filter(comment => commentId !== comment[0]);
+            game.comments = newComments;
+            client.publish(`/comments/${id}`, JSON.stringify({allComments: game.comments}));
+            res.send({ deltedGameId: id });
+        }
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);

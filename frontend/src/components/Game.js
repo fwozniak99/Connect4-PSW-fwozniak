@@ -5,6 +5,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import axios from 'axios';
 import mqtt from 'mqtt';
 import './Game.scss';
@@ -25,8 +26,10 @@ function Game() {
     const [ message, setMessage ] = useState('');
     const [ winner, setWinner ] = useState(null);
     const [ chosen, setChosen ] = useState(false);
-    const location = useLocation()
+    const location = useLocation();
     const { name } = location.state;
+    const [ comment, setComment ] = useState("");
+    const [ comments, setComments ] = useState([]);
 
     useEffect(() => {
         setClient(mqtt.connect('ws://localhost:8000'));
@@ -40,10 +43,12 @@ function Game() {
                 client.subscribe(`/chat/${id}`);
                 client.subscribe(`/status/${id}`);
                 client.subscribe(`/results/${id}`);
+                client.subscribe(`/comments/${id}`);
             })
 
             sendParticipant(name);
             getBoard();
+            getComments();
 
             client.on('message', (topic, message) => {
                 if (topic.toString() === `/move/${id}`) {
@@ -69,6 +74,10 @@ function Game() {
                 if (topic.toString() === `/results/${id}`) {
                     const results = JSON.parse(message.toString());
                     setWinner(results.winner);
+                }
+                if (topic.toString() === `/comments/${id}`) {
+                    const comm = JSON.parse(message.toString());
+                    getComments();
                 }
             });
             axios.get(`http://localhost:${port}/games/${id}`)
@@ -107,7 +116,7 @@ function Game() {
     }
 
     const makeMove = (player, col) => {
-        axios.post(`http://localhost:${port}/games/${id}`, { player, col })
+        axios.put(`http://localhost:${port}/games/${id}`, { player, col })
             .catch(err => console.log(err));
     };
 
@@ -141,6 +150,23 @@ function Game() {
         } else {
             return `${player2[0]} wins!`;
         }
+    }
+
+    const addComment = (name, comment) => {
+        axios.post(`http://localhost:${port}/games/${id}/comment`, { name, comment }).then(() => {
+            setComment("");
+        }).catch(err => console.log(err));
+    }
+
+    const getComments = () => {
+        axios.get(`http://localhost:${port}/games/${id}/comments`).then((res) => {
+            setComments(res.data.comments);
+        }).catch(err => console.log(err));
+    }
+
+    const deleteComment = (commentId) => {
+        axios.delete(`http://localhost:${port}/games/${id}/deleteComment/${commentId}`).then((res) => {
+        }).catch(err => console.log(err));
     }
 
 
@@ -247,6 +273,35 @@ function Game() {
                                             ))}
                                         </div>
                                     </div> 
+                            </div>
+                            <div className="commentContainer">
+                                <h3>Comments</h3>
+                                <div className="commentsInputContainer">
+                                    <TextField
+                                        label="Comment..."
+                                        id="filled-start-adornment"
+                                        value={comment}
+                                        onChange={e => { setComment(e.target.value)} }
+                                        sx={{ width: '50ch' }}
+                                        InputProps={{
+                                            startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
+                                        }}
+                                        variant="filled"
+                                        />
+                                    <Button onClick={() => {addComment(name, comment)}} id="commentButton">
+                                        <SendIcon/>
+                                    </Button>
+                                </div>
+                                <div className="commentbox">
+                                            {comments && comments.map((com, id) => (
+                                                <div key={id}  className="comment">
+                                                    <p>{com[1]+ ": " + com[2]}</p>
+                                                    <Button onClick={() => deleteComment(com[0])} className="deleteButton">
+                                                        <DeleteOutlineIcon className="deleteIcon"/>
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                </div>
                             </div>
                         </div>
                         : 

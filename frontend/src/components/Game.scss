@@ -77,6 +77,19 @@
                     }
                 }
             }
+            .commentContainer {
+                display: flex;
+                flex-direction: column;
+                .commentbox {
+                    display: flex;
+                    flex-direction: column;
+                    .comment {
+                        display: flex;
+                        gap: 50px;
+                        justify-content: center;
+                    }
+                }
+            }
         }
     }
 }
