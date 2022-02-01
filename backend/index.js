@@ -341,7 +341,8 @@ app.put('/games/:id/move', (req, res) => {
             }
             if (drawCondition === 7) {
                 game.winner = 3;
-                client.publish(`/results/${id}`, JSON.stringify({ winner: player }))
+                game.over = true;
+                client.publish(`/results/${id}`, JSON.stringify({ winner: game.winner }));
             }
         }
 

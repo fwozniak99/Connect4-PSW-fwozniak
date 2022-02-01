@@ -147,7 +147,7 @@ function Game() {
     const getResults = (winner) => {
         if (player1.includes(winner)) {
             return `${player1[0]} wins!`;
-        } else if (player1.includes(winner)) {
+        } else if (player2.includes(winner)) {
             return `${player2[0]} wins!`;
         } else {
             return 'It is a draw!';
