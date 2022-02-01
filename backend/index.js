@@ -15,8 +15,9 @@ let allGames = [];
 let allUsers = [];
 
 class Game {
-    constructor(id) {
+    constructor(id, roomName) {
         this.id = id;
+        this.roomName = roomName;
         this.participants = [];
         this.board = [ [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0],
@@ -199,9 +200,10 @@ app.get('/games', (req, res) => {
 app.post('/games', (req, res) => {
     try {
         const id = uuidv4();
+        const { roomName } = req.body;
 
-        allGames.push(new Game(id));
-        client.publish('/games', id);
+        allGames.push(new Game(id, roomName));
+        client.publish('/games', id, roomName);
 
         res.send({ newGame: id });
     } catch(err) {
@@ -224,6 +226,48 @@ app.delete('/games/:id', (req, res) => {
         res.send({ err: err.message });
     }
 })
+
+//PUT /games/:id - editing a room(game) name
+app.put('/games/:id', (req, res) => {
+    try {
+        const { newRoomName } = req.body;
+        const id = req.params.id;
+        const game = allGames.find(game => id === game.id);
+        game.roomName = newRoomName;
+        client.publish('/games', id);
+
+        res.send({ editedGameId: id });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+// GET /games/:id/board - getting Game board
+app.get('/games/:id/board', (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = allGames.find(game => id === game.id);
+        res.send({ board: game ? game.board : []});
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+//GET /games/:id - getting whole Game
+app.get('/games/:id', (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = allGames.find(game => id === game.id);
+
+        res.send({ player1: game.player1, player2: game.player2, winner: game.winner, turn: game.turn, status: game.status });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+});
+
 
 //POST /games/:id/add - adding Participant
 app.post('/games/:id/add', (req, res) => {
@@ -273,33 +317,8 @@ app.post('/games/:id/play', (req, res) => {
     }
 });
 
-// GET /games/:id/board - getting Game board
-app.get('/games/:id/board', (req, res) => {
-    try {
-        const id = req.params.id;
-        const game = allGames.find(game => id === game.id);
-        res.send({ board: game ? game.board : []});
-    } catch(err) {
-        console.log(err);
-        res.send({ err: err.message });
-    }
-})
-
-//GET /games/:id - getting whole Game
-app.get('/games/:id', (req, res) => {
-    try {
-        const id = req.params.id;
-        const game = allGames.find(game => id === game.id);
-
-        res.send({ player1: game.player1, player2: game.player2, winner: game.winner, turn: game.turn, status: game.status });
-    } catch(err) {
-        console.log(err);
-        res.send({ err: err.message });
-    }
-});
-
 // PUT /games/:id - making a move in the Game
-app.put('/games/:id', (req, res) => {
+app.put('/games/:id/move', (req, res) => {
     try {
         const id = req.params.id;
         const { player, col } = req.body;
@@ -312,6 +331,18 @@ app.put('/games/:id', (req, res) => {
                 game.winner = player;
                 client.publish(`/results/${id}`, JSON.stringify({ winner: player }))
             };
+            let drawCondition = 0;
+            for (let i = 0; i<7; i++) {
+                if (!game.board[i].includes(0)) {
+                    if (game.board[i][0]!==0) {
+                        drawCondition++;
+                    }
+                }
+            }
+            if (drawCondition === 7) {
+                game.winner = 3;
+                client.publish(`/results/${id}`, JSON.stringify({ winner: player }))
+            }
         }
 
         res.send({ wasMoveMade: true });

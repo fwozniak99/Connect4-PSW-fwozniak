@@ -6,6 +6,7 @@ import { Button, Pagination, TextField } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import './Home.scss';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/Edit';
 const port = 8080;
 
 
@@ -13,7 +14,7 @@ function Home() {
     const [ games, setGames ] = useState([]);
     const [ client, setClient ] = useState(null);
     const [ currentPage, setCurrentPage ] = useState(1);
-    const gamesPerPage = 4;
+    const gamesPerPage = 2;
     const [ visible, setVisible ] = useState(false);
     const [ nameTaken, setNameTaken ] = useState(false);
     const [ name, setName ] = useState('');
@@ -21,6 +22,8 @@ function Home() {
     const [ wrongCredentials, setWrongCredentials] = useState(false);
     const [ newName, setNewName ] = useState('');
     const [ newPassword, setNewPassword ] = useState('');
+    const [ roomName, setRoomName ] = useState('');
+    const [ newRoomName, setNewRoomName ]= useState('');
 
 
     useEffect(() => {
@@ -56,14 +59,22 @@ function Home() {
         }).catch(err => console.log(err));
     }
 
-    const createNewGame = () => {
-        axios.post(`http://localhost:${port}/games`)
-        .catch(error => console.log(error));
+    const createNewGame = (roomName) => {
+        axios.post(`http://localhost:${port}/games`, {roomName}).then((res) => {
+            setRoomName('');
+        }).catch(error => console.log(error));
     }
 
     const deleteGame = (id) => {
         axios.delete(`http://localhost:${port}/games/${id}`)
         .catch(error => console.log(error));
+    }
+
+    const editGame = (id) => {
+        axios.put(`http://localhost:${port}/games/${id}`, { newRoomName }).then((res) => {
+            getAllGames();
+            setNewRoomName('');
+        }).catch(error => console.log(error));
     }
 
     const sendUser = () => {
@@ -171,16 +182,29 @@ function Home() {
                 </div>
                 :
                 <div>
-                    <Button onClick={() => {createNewGame()}} variant="contained" startIcon={<AddCircleOutlineIcon/>}>Create a new game</Button>
+                    <TextField
+                        label="Enter game name" variant="outlined"
+                        value={roomName}
+                        onChange={e => { setRoomName(e.target.value)} }
+                    />
+                    <Button onClick={() => {createNewGame(roomName)}} variant="contained" startIcon={<AddCircleOutlineIcon/>}>Create a new game</Button>
                     <h3 id="gamesTypography">List of games</h3>
                     <div className="listContainer">
                         {displayedGames && displayedGames.map(game => {
                             return (
                             <div key={game.id} className="roomContainer">
+                                <p>{game.roomName}</p>
                                 <Link to={`/games/${game.id}`} state={{ name: name }}>ENTER GAME</Link>
                                 <p>id: {game.id}</p>
                                 <Button onClick={() => deleteGame(game.id)} className="deleteButton">
                                     <DeleteOutlineIcon className="deleteIcon"/>
+                                </Button>
+                                <TextField
+                                    label="Edit game name" variant="outlined"
+                                    onChange={e => { setNewRoomName(e.target.value)} }
+                                />
+                                <Button onClick={() => editGame(game.id, newRoomName)} className="deleteButton">
+                                    <EditIcon className="deleteIcon"/>
                                 </Button>
                             </div>
                             )}
