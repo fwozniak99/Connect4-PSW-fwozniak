@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const { v4: uuidv4 } = require('uuid');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 
 app.use(express.json());
 app.use(cors());
@@ -11,7 +12,7 @@ const mqtt = require('mqtt');
 const client = mqtt.connect('ws://localhost:8000');
 
 let allGames = [];
-let allUsers = [["filip", "haslo123"], ["kacper", "password"]];
+let allUsers = [];
 
 class Game {
     constructor(id) {
@@ -136,17 +137,19 @@ app.delete('/games/:id', (req, res) => {
     }
 })
 
-app.post('/users/add', (req, res) => {
+app.post('/users/add', async (req, res) => {
     try {
         const { newName, newPassword } = req.body;
-        const usernames = allUsers.map(user => user[0])
+        const usernames = allUsers.map(user => user["name"])
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        console.log(hashedPassword);
         
         if (usernames.includes(newName)) {
             res.send({ wasUserAdded: false });
         } else if (newName==="" || newPassword==="") {
             res.send({ wasUserAdded: false });
         } else {
-            allUsers.push([newName, newPassword]);
+            allUsers.push({name: newName, password: hashedPassword});
             console.log(allUsers)
             res.send({ wasUserAdded: true });
         }
@@ -156,11 +159,13 @@ app.post('/users/add', (req, res) => {
     }
 })
 
-app.post('/users/login', (req, res) => {
+app.post('/users/login', async (req, res) => {
     try {
         const { name, password } = req.body;
-        const ourUser = [name, password]
-        if (allUsers.some(a => ourUser.every((v, i) => v === a[i]))) {
+        const ourUser = allUsers.find(user => user["name"] === name);
+        if (ourUser === null) {
+            res.send({ loggedIn: false });
+        } else if (await bcrypt.compare(password, ourUser["password"])){
             res.send({ loggedIn: true });
         } else {
             res.send({ loggedIn: false });
