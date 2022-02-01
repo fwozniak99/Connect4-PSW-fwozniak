@@ -24,12 +24,16 @@ function UserList() {
         if(client) {
             client.on('connect', () => {
                 client.subscribe('/users');
+                client.subscribe('/users/delete');
             })
 
             getAllUsers();
 
             client.on('message', (topic, message) => {
                 if (topic.toString() === '/users') {
+                    getAllUsers();
+                }
+                if (topic.toString() === '/users/delete') {
                     getAllUsers();
                 }
             });
@@ -42,6 +46,12 @@ function UserList() {
             setUsers(res.data.users);
         }).catch(err => console.log(err));
     }
+
+    const deleteUser = (name) => {
+        axios.delete(`http://localhost:${port}/users/${name}`)
+        .catch(error => console.log(error));
+    }
+
 
     const indexOfLastUser = currentPage * usersPerPage;
     const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -68,7 +78,12 @@ function UserList() {
             />
             {displayedUsers && displayedUsers.map((user, id) => {
                 return (
-                    <Typography key={id} className="userContainer" variant="h6">{user["name"]}</Typography>
+                    <div key={id} >
+                        <Typography className="userContainer" variant="h6">{user["name"]}</Typography>
+                        <Button onClick={() => deleteUser(user["name"])} className="deleteButton">
+                                        <DeleteOutlineIcon className="deleteIcon"/>
+                        </Button>
+                    </div>
                 )
             })
 

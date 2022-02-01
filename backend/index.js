@@ -100,6 +100,74 @@ class Game {
     }
 }
 
+//GET /users - pobieranie użytkowników
+app.get('/users', (req, res) => {
+    try {
+        res.send({ users: allUsers })
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+//POST /users/add - rejestracja
+app.post('/users/add', async (req, res) => {
+    try {
+        const { newName, newPassword } = req.body;
+        const usernames = allUsers.map(user => user["name"])
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        client.publish('/users', JSON.stringify({ newName, hashedPassword }));
+        
+        if (usernames.includes(newName)) {
+            res.send({ wasUserAdded: false });
+        } else if (newName==="" || newPassword==="") {
+            res.send({ wasUserAdded: false });
+        } else {
+            allUsers.push({name: newName, password: hashedPassword});
+            console.log(allUsers);
+            res.send({ wasUserAdded: true });
+        }
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+
+//POST /users/login - logowanie
+app.post('/users/login', async (req, res) => {
+    try {
+        const { name, password } = req.body;
+        const ourUser = allUsers.find(user => user["name"] === name);
+        if (ourUser === null || !name || !password ) {
+            res.send({ loggedIn: false });
+        } else if (await bcrypt.compare(password, ourUser["password"])){
+            res.send({ loggedIn: true });
+        } else {
+            res.send({ loggedIn: false });
+        }
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+//DELETE /users - usuwanie użykownika
+app.delete('/users/:name', (req, res) => {
+    try {
+        const name = req.params.name;
+        const newUsers = allUsers.filter(user => user["name"] !== name);
+        allUsers = newUsers;
+        client.publish('/users/delete', name);
+        res.send({ deletedUser: name });
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
+//GET /games - pobieranie pokoi
 app.get('/games', (req, res) => {
     try {
         res.send({ games: allGames });
@@ -131,56 +199,6 @@ app.delete('/games/:id', (req, res) => {
         client.publish('/games/delete', id);
 
         res.send({ deltedGameId: id });
-    } catch(err) {
-        console.log(err);
-        res.send({ err: err.message });
-    }
-})
-
-app.get('/users', (req, res) => {
-    try {
-        client.publish('/users', JSON.stringify({allUsers}));
-        res.send({ users: allUsers })
-    } catch(err) {
-        console.log(err);
-        res.send({ err: err.message });
-    }
-})
-
-app.post('/users/add', async (req, res) => {
-    try {
-        const { newName, newPassword } = req.body;
-        const usernames = allUsers.map(user => user["name"])
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        client.publish('/users', JSON.stringify({ newName, hashedPassword }));
-        
-        if (usernames.includes(newName)) {
-            res.send({ wasUserAdded: false });
-        } else if (newName==="" || newPassword==="") {
-            res.send({ wasUserAdded: false });
-        } else {
-            allUsers.push({name: newName, password: hashedPassword});
-            console.log(allUsers);
-            res.send({ wasUserAdded: true });
-        }
-    } catch(err) {
-        console.log(err);
-        res.send({ err: err.message });
-    }
-})
-
-app.post('/users/login', async (req, res) => {
-    try {
-        const { name, password } = req.body;
-        const ourUser = allUsers.find(user => user["name"] === name);
-        if (ourUser === null) {
-            res.send({ loggedIn: false });
-        } else if (await bcrypt.compare(password, ourUser["password"])){
-            res.send({ loggedIn: true });
-        } else {
-            res.send({ loggedIn: false });
-        }
     } catch(err) {
         console.log(err);
         res.send({ err: err.message });
