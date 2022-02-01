@@ -70,6 +70,8 @@ function Home() {
         axios.post(`http://localhost:${port}/users/add`, { newName, newPassword}).then((res) => {
             setNameTaken(!res.data.wasUserAdded);
         }).catch(err => console.log(err));
+        setNewName("");
+        setNewPassword("");
     };
 
     const login = () => {
