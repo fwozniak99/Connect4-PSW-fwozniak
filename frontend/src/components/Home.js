@@ -7,6 +7,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import './Home.scss';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import GroupIcon from '@mui/icons-material/Group';
 const port = 8080;
 
 
@@ -99,6 +100,12 @@ function Home() {
     return (
         <div>
             <h2>CONNECT4 GAME</h2>
+            <div className="userLink">
+                <Link to={`/users`} >
+                    <GroupIcon id="userIcon"/> 
+                    <p>Go to UserList</p>
+                </Link>
+            </div>
             { !visible ?
                 <div className="registerAndLoginForms">    
                     {!nameTaken ? 
@@ -182,12 +189,14 @@ function Home() {
                 </div>
                 :
                 <div>
-                    <TextField
-                        label="Enter game name" variant="outlined"
-                        value={roomName}
-                        onChange={e => { setRoomName(e.target.value)} }
-                    />
-                    <Button onClick={() => {createNewGame(roomName)}} variant="contained" startIcon={<AddCircleOutlineIcon/>}>Create a new game</Button>
+                    <div className="roomForm">
+                        <TextField
+                            label="Enter game name" variant="outlined"
+                            value={roomName}
+                            onChange={e => { setRoomName(e.target.value)} }
+                        />
+                        <Button onClick={() => {createNewGame(roomName)}} variant="contained" startIcon={<AddCircleOutlineIcon/>}>Create a new game</Button>
+                    </div>
                     <h3 id="gamesTypography">List of games</h3>
                     <div className="listContainer">
                         {displayedGames && displayedGames.map(game => {
@@ -195,7 +204,7 @@ function Home() {
                             <div key={game.id} className="roomContainer">
                                 <p>{game.roomName}</p>
                                 <Link to={`/games/${game.id}`} state={{ name: name }}>ENTER GAME</Link>
-                                <p>id: {game.id}</p>
+                                <p className="idInfo">id: {game.id}</p>
                                 <Button onClick={() => deleteGame(game.id)} className="deleteButton">
                                     <DeleteOutlineIcon className="deleteIcon"/>
                                 </Button>
