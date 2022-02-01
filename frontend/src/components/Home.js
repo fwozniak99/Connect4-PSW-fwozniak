@@ -30,7 +30,6 @@ function Home() {
     useEffect(() => {
         if(client) {
             client.on('connect', () => {
-                console.log("connected")
                 client.subscribe('/games');
                 client.subscribe('/games/delete');
             })

@@ -35,7 +35,6 @@ function Game() {
     useEffect(() => {
         if(client) {
             client.on('connect', () => {
-                console.log("connected")
                 client.subscribe(`/move/${id}`);
                 client.subscribe(`/addplayers/${id}`);
                 client.subscribe(`/chat/${id}`);

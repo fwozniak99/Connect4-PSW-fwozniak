@@ -137,12 +137,23 @@ app.delete('/games/:id', (req, res) => {
     }
 })
 
+app.get('/users', (req, res) => {
+    try {
+        client.publish('/users', JSON.stringify({allUsers}));
+        res.send({ users: allUsers })
+    } catch(err) {
+        console.log(err);
+        res.send({ err: err.message });
+    }
+})
+
 app.post('/users/add', async (req, res) => {
     try {
         const { newName, newPassword } = req.body;
         const usernames = allUsers.map(user => user["name"])
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        console.log(hashedPassword);
+
+        client.publish('/users', JSON.stringify({ newName, hashedPassword }));
         
         if (usernames.includes(newName)) {
             res.send({ wasUserAdded: false });
@@ -150,7 +161,7 @@ app.post('/users/add', async (req, res) => {
             res.send({ wasUserAdded: false });
         } else {
             allUsers.push({name: newName, password: hashedPassword});
-            console.log(allUsers)
+            console.log(allUsers);
             res.send({ wasUserAdded: true });
         }
     } catch(err) {

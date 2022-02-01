@@ -1,0 +1,13 @@
+.userList {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: space-between;
+    .userContainer {
+        margin-top: 30px;
+    }
+    .pagination {
+        margin-top: 50px;
+    }
+}
