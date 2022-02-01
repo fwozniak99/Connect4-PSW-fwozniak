@@ -1,0 +1,10 @@
+2022-02-01 23:36:03.008 INFO  successful POST /users/add request, user added 
+2022-02-01 23:36:13.560 INFO  succesful GET /users request 
+2022-02-01 23:36:17.670 INFO  subscription to /users at2022-02-01T22:36:17.670Z 
+2022-02-01 23:36:17.670 INFO  successful PUT /users/:name request, user edited 
+2022-02-01 23:36:17.681 INFO  succesful GET /users request 
+2022-02-01 23:36:27.430 INFO  successful DELETE /users/:name request, user deleted 
+2022-02-01 23:36:27.430 INFO  subscription to /users/delete at2022-02-01T22:36:27.430Z 
+2022-02-01 23:36:27.436 INFO  succesful GET /users request 
+2022-02-01 23:36:35.329 INFO  successful POST /users/add request, user added 
+2022-02-01 23:36:41.182 INFO  successful POST /users/login request, user logged in 

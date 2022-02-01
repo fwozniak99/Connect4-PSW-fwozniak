@@ -3,6 +3,13 @@ const app = express();
 const { v4: uuidv4 } = require('uuid');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const SimpleNodeLogger = require("simple-node-logger");
+opts = {
+    logFilePath:'mylogfile.log',
+    timestampFormat:'YYYY-MM-DD HH:mm:ss.SSS'
+}
+
+const logger = SimpleNodeLogger.createSimpleLogger(opts);
 
 app.use(express.json());
 app.use(cors());
@@ -104,9 +111,11 @@ class Game {
 //GET /users - getting users
 app.get('/users', (req, res) => {
     try {
+        logger.info('succesful GET /users request');
         res.send({ users: allUsers })
     } catch(err) {
         console.log(err);
+        logger.error('unsuccesful GET /users request');
         res.send({ err: err.message });
     }
 })
@@ -121,16 +130,20 @@ app.post('/users/add', async (req, res) => {
         client.publish('/users', JSON.stringify({ newName, hashedPassword }));
         
         if (usernames.includes(newName)) {
+            logger.info('successful POST /users/add request, user not added');
             res.send({ wasUserAdded: false });
         } else if (newName==="" || newPassword==="") {
+            logger.info('successful POST /users/add request, user not added');
             res.send({ wasUserAdded: false });
         } else {
             allUsers.push({name: newName, password: hashedPassword});
+            logger.info('successful POST /users/add request, user added');
             console.log(allUsers);
             res.send({ wasUserAdded: true });
         }
     } catch(err) {
         console.log(err);
+        logger.error('unsuccessful POST /users/add request');
         res.send({ err: err.message });
     }
 })
@@ -142,14 +155,18 @@ app.post('/users/login', async (req, res) => {
         const { name, password } = req.body;
         const ourUser = allUsers.find(user => user["name"] === name);
         if (ourUser === null || !name || !password ) {
+            logger.info('successful POST /users/login request, user not logged');
             res.send({ loggedIn: false });
         } else if (await bcrypt.compare(password, ourUser["password"])){
+            logger.info('successful POST /users/login request, user logged in');
             res.send({ loggedIn: true });
         } else {
+            logger.info('successful POST /users/login request, user not logged');
             res.send({ loggedIn: false });
         }
     } catch(err) {
         console.log(err);
+        logger.error('unsuccessful POST /users/login request');
         res.send({ err: err.message });
     }
 })
@@ -160,10 +177,13 @@ app.delete('/users/:name', (req, res) => {
         const name = req.params.name;
         const newUsers = allUsers.filter(user => user["name"] !== name);
         allUsers = newUsers;
+        logger.info('successful DELETE /users/:name request, user deleted');
+        logger.info('subscription to /users/delete at', new Date().toJSON());
         client.publish('/users/delete', name);
         res.send({ deletedUser: name });
     } catch(err) {
         console.log(err);
+        logger.error('unsuccessful DELETE /users/:name request');
         res.send({ err: err.message });
     }
 })
@@ -177,11 +197,14 @@ app.put('/users/:name', (req, res) => {
         const canAdd = allUsers.filter(user => user["name"] === (newName));
         if (canAdd.length === 0) {
             allUsers[userIndex]["name"] = newName;
+            logger.info('subscription to /users at', new Date().toJSON());
+            logger.info('successful PUT /users/:name request, user edited');
             client.publish('/users');
             res.send({ editedUser: name });
         }
     } catch(err) {
         console.log(err);
+        logger.info('unsuccessful PUT /users/:name request');
         res.send({ err: err.message });
     }
 })
